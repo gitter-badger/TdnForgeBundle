@@ -5,7 +5,7 @@ interpreted as described in [RFC 2119].
 
 Contributors should keep in mind the following rules when creating pull requests:
 
-  * You MUST rebase/pull against the `develop` branch (recommended frequently) and squash your commit when submitting. 
+  * You SHOULD rebase/pull against the `develop` branch (recommended frequently) and squash your commit when submitting. 
     See the [apache git usage] document which explains the why and this [tutorial] which explains the how. 
     Extra information about rebasing/reflog can be located in the [rebase documentation]
     and this [reflog tutorial] respectively
