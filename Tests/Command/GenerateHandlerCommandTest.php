@@ -1,19 +1,45 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Command;
+namespace Tdn\ForgeBundle\Tests\Command;
 
-use Tdn\PilotBundle\Command\GenerateHandlerCommand;
-use Tdn\PilotBundle\Manipulator\HandlerManipulator;
-use Tdn\PilotBundle\Model\File;
+use Symfony\Component\Console\Tester\CommandTester;
+use Tdn\ForgeBundle\Command\GenerateHandlerCommand;
+use Tdn\ForgeBundle\Generator\HandlerGenerator;
+use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\PilotBundle\Tests\Fixtures\HandlerData;
 
 /**
  * Class GenerateHandlerCommandTest
- * @package Tdn\PilotBundle\Tests\Command
+ * @package Tdn\ForgeBundle\Tests\Command
  */
 class GenerateHandlerCommandTest extends AbstractGeneratorCommandTest
 {
+    /**
+     * @param bool $overWrite
+     * @param string $format
+     * @param string $entity
+     * @param File[] $files
+     *
+     * @dataProvider optionsProvider
+     */
+    public function testExecute($overWrite, $format, $entity, array $files)
+    {
+        $options = [
+            'command'            => $this->getCommand()->getName(),
+            '--overwrite'        => $overWrite,
+            '--target-directory' => $this->getOutDir(),
+            '--format'           => $format,
+            '--entity'           => $entity
+        ];
+
+        $tester = new CommandTester($this->getFullCommand());
+        $tester->execute($options);
+
+        foreach ($files as $generatedFile) {
+            $this->assertRegExp('#' . $generatedFile->getRealPath() . '#', $tester->getDisplay());
+        }
+    }
+
     /**
      * @return GenerateHandlerCommand
      */
@@ -25,47 +51,63 @@ class GenerateHandlerCommandTest extends AbstractGeneratorCommandTest
     /**
      * @return array
      */
-    public function getOptions()
+    public function optionsProvider()
     {
         return [
-            'command'            => $this->getCommand()->getName(),
-            '--overwrite'        => false,
-            '--target-directory' => $this->getOutDir(),
-            '--entity'           => 'FooBarBundle:Foo'
+            [
+                false,
+                'xml',
+                'FooBarBundle:Foo',
+                $this->getProcessedXmlFiles()
+            ],
+            [
+                false,
+                'yaml',
+                'FooBarBundle:Foo',
+                $this->getProcessedYamlFiles()
+            ]
         ];
     }
 
     /**
-     * @return Mockery\MockInterface|HandlerManipulator
+     * @return Mockery\MockInterface|HandlerGenerator
      */
-    protected function getManipulator()
+    protected function getGenerator(array $processedFiles)
     {
-        $manipulator = Mockery::mock(
-            new HandlerManipulator()
-        );
+        $generator = Mockery::mock('\Tdn\ForgeBundle\Generator\HandlerGenerator');
 
-        $manipulator
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'prepare'  => $manipulator,
-                    'isValid'  => true,
-                    'generate' => $this->getGeneratedFiles()
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return $manipulator;
+        return $this->configureGeneratorMock($generator, $processedFiles);
     }
 
     /**
      * @return File[]
      */
-    protected function getGeneratedFiles()
+    protected function getProcessedFiles()
+    {
+        return array_merge($this->getProcessedYamlFiles(), $this->getProcessedXmlFiles());
+    }
+
+    /**
+     * @return File[]
+     */
+    protected function getProcessedYamlFiles()
     {
         $handlerFileMock = $this->getHandlerFileMock();
         $handlerServiceMock = $this->getHandlerServiceMock();
+
+        return [
+            $handlerFileMock->getRealPath() => $handlerFileMock,
+            $handlerServiceMock->getRealPath() => $handlerServiceMock
+        ];
+    }
+
+    /**
+     * @return File[]
+     */
+    protected function getProcessedXmlFiles()
+    {
+        $handlerFileMock = $this->getHandlerFileMock();
+        $handlerServiceMock = $this->getXmlHandlerServiceMock();
 
         return [
             $handlerFileMock->getRealPath() => $handlerFileMock,
@@ -78,17 +120,13 @@ class GenerateHandlerCommandTest extends AbstractGeneratorCommandTest
      */
     protected function getHandlerFileMock()
     {
-        $handlerFileMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $handlerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $handlerFileMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents' => HandlerData::FOO_HANDLER,
-                    'getBaseName'  => 'FooHandler',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Handler',
                     'getRealPath'  => $this->getOutDir() .
-                        DIRECTORY_SEPARATOR . 'Handler' . DIRECTORY_SEPARATOR . 'FooHandler.php'
+                        DIRECTORY_SEPARATOR . 'Handler' . DIRECTORY_SEPARATOR . 'FooHandler.php',
                 ]
             )
             ->withAnyArgs()
@@ -103,18 +141,34 @@ class GenerateHandlerCommandTest extends AbstractGeneratorCommandTest
      */
     protected function getHandlerServiceMock()
     {
-        $handlrServMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $handlrServMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $handlrServMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents' => HandlerData::FOO_HANDLER_SERVICE_YAML,
-                    'getBaseName'  => 'handlers',
-                    'getExtension' => 'yaml',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'handlers.yaml'
+                        'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'handlers.yaml',
+                ]
+            )
+            ->withAnyArgs()
+            ->zeroOrMoreTimes()
+        ;
+
+        return $handlrServMock;
+    }
+
+    /**
+     * @return File
+     */
+    protected function getXmlHandlerServiceMock()
+    {
+        $handlrServMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
+        $handlrServMock
+            ->shouldDeferMissing()
+            ->shouldReceive(
+                [
+                    'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
+                        'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'handlers.xml',
                 ]
             )
             ->withAnyArgs()

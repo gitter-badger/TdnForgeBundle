@@ -21,45 +21,38 @@
      *
 {% endif %}
 {% endblock documentation %}
-     * @Rest\View(serializerEnableMaxDepthChecks=true)
+     * @Rest\View(statusCode=200, serializerEnableMaxDepthChecks=true)
      *
      * @param Request $request
      * @param $id
      *
+     * @throws NotFoundHttpException When the resource is not found.
+     *
      * @return Response
 {% endblock phpdoc_method_header %}
-{% block phpdoc_method_annotations %}
-{% if 'annotation' == format %}{% endif %}
-{% endblock phpdoc_method_annotations %}
      */
 {% block method_definition %}
+{% if 'annotation' == format %}
     public function putAction(Request $request, $id)
+{% else %}
+    public function put{{ entity }}Action(Request $request, $id)
+{% endif %}
 {% endblock method_definition %}
     {
 {% block method_body %}
         try {
-            ${{ entity|lowerfirst }} = $this->get{{ entity }}Handler()
-                ->find{{ entity }}By(['{{ entity_identifier }}'=> $id]);
-            if (${{ entity|lowerfirst }}) {
-                $code = Codes::HTTP_OK;
-            } else {
-                ${{ entity|lowerfirst }} = $this->get{{ entity }}Handler()
-                    ->create{{ entity }}();
-                $code = Codes::HTTP_CREATED;
-            }
-
-            $answer{{ resource ? "['" ~ entity|lowerfirst ~  "']" }} =
-                $this->get{{ entity }}Handler()->put(
-                    ${{ entity|lowerfirst }},
-                    $this->getPostData($request)
-                );
+            return $this->get{{ entity }}Handler()->put(
+                $this->getOr404($id),
+                $this->getPayload($request)
+            );
         } catch (InvalidFormException $exception) {
-            return $exception->getForm();
+            return $this->handleView(
+                $this->view(
+                    $exception->getErrors(),
+                    $exception->getStatusCode(),
+                    $exception->getHeaders()
+                )
+            );
         }
-
-        $view = $this->view($answer, $code);
-
-        return $this->handleView($view);
 {% endblock method_body %}
-{% block method_return '' %}
     }

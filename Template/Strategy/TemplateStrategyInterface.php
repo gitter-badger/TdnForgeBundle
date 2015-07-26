@@ -1,32 +1,40 @@
 <?php
 
-namespace Tdn\PilotBundle\Template\Strategy;
+namespace Tdn\ForgeBundle\Template\Strategy;
 
-use Tdn\PilotBundle\Model\File;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Tdn\ForgeBundle\Model\File;
+use Tdn\ForgeBundle\Template\PostProcessor\PostProcessorInterface;
 
 /**
  * Interface TemplateStrategyInterface
- * @package Tdn\PilotBundle\Template\Strategy
+ * @package Tdn\ForgeBundle\Template\Strategy
  */
 interface TemplateStrategyInterface
 {
     /**
-     * @param array $skeletonDirs An array of skeleton dirs
+     * @param array|string[] $skeletonDirs An array of skeleton dirs
      */
     public function setSkeletonDirs(array $skeletonDirs);
 
     /**
-     * @return array
+     * @param string $skeletonDir
+     */
+    public function addSkeletonDir($skeletonDir);
+
+    /**
+     * @return array|string[]
      */
     public function getSkeletonDirs();
 
     /**
-     * @param $template
-     * @param $parameters
+     * @param string $template
+     * @param array $parameters
      *
      * @return string
      */
-    public function render($template, $parameters);
+    public function render($template, array $parameters);
 
     /**
      * @param File $target

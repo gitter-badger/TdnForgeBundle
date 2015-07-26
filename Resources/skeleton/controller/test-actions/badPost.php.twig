@@ -4,10 +4,7 @@
 {% endblock method_definition %}
     {
 {% block method_body %}
-        $invalid{{ entity }} = $this->container
-            ->get('{{ dataloader_service_ns }}.{{ entity|lower }}')
-            ->createInvalid()
-        ;
+        $invalid{{ entity }} = null; //Implement Later
 
         $this->createJsonRequest(
             'POST',

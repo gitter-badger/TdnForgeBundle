@@ -3,17 +3,13 @@
 namespace {{ namespace }}\Controller{{ entity_namespace ? '\\' ~ entity_namespace : '' }};
 
 {% block use_statements %}
-use FOS\RestBundle\Controller\Annotations\QueryParam;
-use FOS\RestBundle\Controller\Annotations\RouteResource;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 use FOS\RestBundle\Util\Codes;
-use Doctrine\Common\Collections\ArrayCollection;
+use FOS\RestBundle\Controller\Annotations as Rest;
 {% if 'annotation' == format -%}
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-{%- endif %}
+use JMS\DiExtraBundle\Annotation as DI;
+{% endif %}
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -31,17 +27,22 @@ use {{ namespace }}\Entity\{{ entity }}Interface;
  * Class {{ entity }}Controller
  * @package {{ namespace }}\Controller
 {% endblock phpdoc_class_header %}
- * @RouteResource("{{ entity|pluralize }}")
-{% block phpdoc_class_annotations %}
 {% if 'annotation' == format %}
- * @Route("/{{ route_prefix }}")
+ * @Rest\RouteResource("{{ entity|pluralize }}")
+ * @Rest\Prefix("{{ route_prefix }}")
 {% endif %}
+{% block phpdoc_class_annotations %}
 {% endblock phpdoc_class_annotations %}
  */
 {% block class_definition %}
 class {{ entity }}Controller extends FOSRestController
 {% endblock class_definition %}
 {
+    {%- block class_props -%}
+    {%- if 'annotation' == format %}
+    {%- include 'controller/properties/handler.php.twig' -%}
+    {%- endif -%}
+    {%- endblock class_props -%}
     {%- block class_body -%}
     {%- include 'controller/actions/getById.php.twig' -%}
 
@@ -51,13 +52,11 @@ class {{ entity }}Controller extends FOSRestController
 
     {%- include 'controller/actions/put.php.twig' -%}
 
-    {%- include 'controller/actions/patch.php.twig' -%}
-
     {%- include 'controller/actions/delete.php.twig' -%}
 
     {%- include 'controller/actions/getOr404.php.twig' -%}
 
-    {%- include 'controller/actions/getPostData.php.twig' -%}
+    {%- include 'controller/actions/getPayload.php.twig' -%}
 
     {%- include 'controller/actions/extra.php.twig' -%}
     {% endblock class_body %}

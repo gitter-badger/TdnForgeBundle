@@ -1,0 +1,35 @@
+<?php
+
+namespace {{ namespace }}\Form\Violation;
+
+{% block use_statements %}
+use Doctrine\Common\Collections\ArrayCollection;
+use FOS\RestBundle\Util\Codes;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Response;
+{% endblock use_statements %}
+{% block class_definition %}
+/**
+ * Class ArrayCollectionMapper
+ * @package {{ namespace }}\Form\Violation
+ */
+class ArrayCollectionMapper
+{% endblock class_definition %}
+{
+{% block class_body %}
+    /**
+     * @param FormInterface $form
+     * @return string[]|ArrayCollection
+     */
+    public function getErrors(FormInterface $form)
+    {
+        $errors['errors'] = new ArrayCollection();
+
+        foreach ($form->getErrors(true, true) as $error) {
+            $errors['errors']->add($error->getMessage());
+        }
+
+        return $errors;
+    }
+{% endblock class_body %}
+}

@@ -1,29 +1,44 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Command;
+namespace Tdn\ForgeBundle\Tests\Command;
 
-use Tdn\PilotBundle\Command\GenerateControllerCommand;
-use Tdn\PilotBundle\Manipulator\ControllerManipulator;
-use Tdn\PilotBundle\Model\File;
+use Symfony\Component\Console\Tester\CommandTester;
+use Tdn\ForgeBundle\Command\GenerateControllerCommand;
+use Tdn\ForgeBundle\Generator\ControllerGenerator;
+use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\PilotBundle\Tests\Fixtures\ControllerData;
 
 /**
  * Class GenerateControllerCommandTest
- * @package Tdn\PilotBundle\Test\Command
+ * @package Tdn\ForgeBundle\Test\Command
  */
 class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
 {
     /**
-     * @return void
+     * @param bool $overWrite
+     * @param bool $swagger
+     * @param string $entity
+     * @param string $prefix
+     *
+     * @dataProvider optionsProvider
      */
-    public function testRoutePrefix()
+    public function testExecute($overWrite, $swagger, $entity, $prefix)
     {
-        /** @var GenerateControllerCommand $command */
-        $command = $this->getFullCommand();
-        $command->setEntity('Foo');
-        $this->assertEquals(strtolower($command->getEntity()), $command->getRoutePrefix());
-        $this->assertEquals('test', $command->getRoutePrefix('test'));
+        $options = [
+            'command'            => $this->getCommand()->getName(),
+            '--overwrite'        => $overWrite,
+            '--target-directory' => $this->getOutDir(),
+            '--with-swagger'     => $swagger,
+            '--entity'           => $entity,
+            '--prefix'           => $prefix
+        ];
+
+        $tester = new CommandTester($this->getFullCommand());
+        $tester->execute($options);
+
+        foreach ($this->getProcessedFiles() as $generatedFile) {
+            $this->assertRegExp('#' . $generatedFile->getRealPath() . '#', $tester->getDisplay());
+        }
     }
 
     /**
@@ -37,69 +52,22 @@ class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
     /**
      * @return array
      */
-    public function getOptions()
-    {
-        return $this->optionsProvider();
-    }
-
-    /**
-     * @return array
-     */
-    protected function optionsProvider()
+    public function optionsProvider()
     {
         return [
-            'command'            => $this->getCommand()->getName(),
-            '--overwrite'        => false,
-            '--target-directory' => $this->getOutDir(),
-            '--resource'         => true,
-            '--with-swagger'     => true,
-            '--entity'           => 'FooBarBundle:Foo'
+            [
+                false,
+                true,
+                'FooBarBundle:Foo',
+                'v1'
+            ]
         ];
-    }
-
-    /**
-     * @return array
-     */
-    protected function altOptionsProvider()
-    {
-        return [
-            'command'            => $this->getCommand()->getName(),
-            '--overwrite'        => false,
-            '--target-directory' => $this->getOutDir(),
-            '--resource'         => true,
-            '--with-swagger'     => true,
-            '--entities-location'=> '/path/to/fake/entities'
-        ];
-    }
-
-    /**
-     * @return ControllerManipulator
-     */
-    protected function getManipulator()
-    {
-        $manipulator = Mockery::mock(
-            new ControllerManipulator()
-        );
-
-        $manipulator
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'prepare'  => $manipulator,
-                    'isValid'  => true,
-                    'generate' => $this->getGeneratedFiles(),
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return $manipulator;
     }
 
     /**
      * @return File[]
      */
-    protected function getGeneratedFiles()
+    protected function getProcessedFiles()
     {
         $controllerFileMock = $this->getControllerFileMock();
 
@@ -109,21 +77,28 @@ class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
     }
 
     /**
+     * @param File[] $processedFiles
+     *
+     * @return ControllerGenerator
+     */
+    protected function getGenerator(array $processedFiles)
+    {
+        $generator = Mockery::mock('\Tdn\ForgeBundle\Generator\ControllerGenerator');
+
+        return $this->configureGeneratorMock($generator, $processedFiles);
+    }
+
+    /**
      * @return File
      */
-    protected function getControllerFileMock()
+    public function getControllerFileMock()
     {
-        $controllerFileMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $controllerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $controllerFileMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents'  => ControllerData::BASIC_FOO_CONTROLLER,
-                    'getFilename'  => 'FooController',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Controller',
-                    'getExtension' => 'php',
-                    'getFullPath'  => $this->getOutDir() .
-                        DIRECTORY_SEPARATOR . 'Controller' .
+                    'getRealPath'  =>  DIRECTORY_SEPARATOR . 'Controller' .
                         DIRECTORY_SEPARATOR . 'FooController.php'
                 ]
             )

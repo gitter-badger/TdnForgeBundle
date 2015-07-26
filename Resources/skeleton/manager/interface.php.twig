@@ -26,10 +26,7 @@ interface {{ entity }}ManagerInterface
      *
      * @return {{ entity }}Interface
      */
-    public function find{{ entity }}By(
-        array $criteria,
-        array $orderBy = null
-    );
+    public function find{{ entity }}By(array $criteria, array $orderBy = null);
 
     /**
      * @param array $criteria
@@ -39,12 +36,16 @@ interface {{ entity }}ManagerInterface
      *
      * @return ArrayCollection|{{ entity }}Interface[]
      */
+{% if entity|pluralize|length >= 23 %}
     public function find{{ entity|pluralize }}By(
         array $criteria,
         array $orderBy = null,
         $limit = null,
         $offset = null
     );
+{% else %}
+    public function find{{ entity|pluralize }}By(array $criteria, array $orderBy = null, $limit = null, $offset = null);
+{% endif %}
 
     /**
      * @param {{ entity }}Interface ${{ entity|lowerfirst }}
@@ -53,20 +54,28 @@ interface {{ entity }}ManagerInterface
      *
      * @return void
      */
+{% if entity|length >= 22 %}
     public function update{{ entity }}(
         {{ entity }}Interface ${{ entity|lowerfirst }},
         $andFlush = true,
         $forceId = false
     );
+{% else %}
+    public function update{{ entity }}({{ entity }}Interface ${{ entity|lowerfirst }}, $andFlush = true, $forceId = false);
+{% endif %}
 
     /**
      * @param {{ entity }}Interface ${{ entity|lowerfirst }}
      *
      * @return void
      */
+{% if entity|length >= 27 %}
     public function delete{{ entity }}(
         {{ entity }}Interface ${{ entity|lowerfirst }}
     );
+{% else %}
+    public function delete{{ entity }}({{ entity }}Interface ${{ entity|lowerfirst }});
+{% endif %}
 
     /**
      * @return string

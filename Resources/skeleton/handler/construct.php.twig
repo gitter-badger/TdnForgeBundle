@@ -1,6 +1,14 @@
 {% block method_definition %}
 
     /**
+{% if 'annotation' == format %}
+     * @DI\InjectParams({
+     *     "em" = @DI\Inject("doctrine"),
+     *     "class" = "{{ namespace }}\Entity\{{ entity }}",
+     *     "formFactory" = @DI\Inject("form.factory")
+     * })
+     *
+{% endif %}
      * @param Registry $em
      * @param string $class
      * @param FormFactoryInterface $formFactory

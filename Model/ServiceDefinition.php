@@ -1,6 +1,6 @@
 <?php
 
-namespace Tdn\PilotBundle\Model;
+namespace Tdn\ForgeBundle\Model;
 
 use Symfony\Component\DependencyInjection\Definition;
 
@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Definition;
  * A service definition value object.
  *
  * Class ServiceDefinition
- * @package Tdn\PilotBundle\Model
+ * @package Tdn\ForgeBundle\Model
  */
 class ServiceDefinition
 {

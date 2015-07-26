@@ -1,45 +1,31 @@
 <?php
 
-namespace Tdn\PilotBundle\Template\Strategy;
+namespace Tdn\ForgeBundle\Template\Strategy;
 
-use Symfony\Component\Filesystem\Exception\IOException;
 use Tdn\PhpTypes\Type\String;
-use Tdn\PilotBundle\Model\File;
 
 /**
  * Class TwigStrategy
- * @package Tdn\PilotBundle\Template\Strategy
+ * @package Tdn\ForgeBundle\Template\Strategy
  */
-class TwigStrategy implements TemplateStrategyInterface
+class TwigStrategy extends AbstractStrategy implements TemplateStrategyInterface
 {
     /**
-     * @var array
+     * @var array|\Twig_SimpleFilter[]
      */
-    private $skeletonDirs;
+    private $twigFilters;
 
     /**
-     * @param array $skeletonDirs An array of skeleton dirs
-     */
-    public function setSkeletonDirs(array $skeletonDirs)
-    {
-        $this->skeletonDirs = $skeletonDirs;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSkeletonDirs()
-    {
-        return $this->skeletonDirs;
-    }
-
-    /**
-     * @param $template
-     * @param $parameters
+     * @param string $template
+     * @param array $parameters
      *
-     * @return string
+     * @throws \Twig_Error_Loader  When the template cannot be found
+     * @throws \Twig_Error_Syntax  When an error occurred during compilation
+     * @throws \Twig_Error_Runtime When an error occurred during rendering
+     *
+     * @return string Rendered/Filtered template as a string.
      */
-    public function render($template, $parameters)
+    public function render($template, array $parameters)
     {
         $twig = new \Twig_Environment(new \Twig_Loader_Filesystem($this->getSkeletonDirs()), [
             'debug'            => true,
@@ -48,47 +34,47 @@ class TwigStrategy implements TemplateStrategyInterface
             'autoescape'       => false,
         ]);
 
-        $twig->addFilter(new \Twig_SimpleFilter('addslashes', 'addslashes'));
-        $twig->addFilter(new \Twig_SimpleFilter(
-            'lowerfirst',
-            function ($input) {
-                return (string) String::create($input)->lowerCaseFirst();
-            }
-        ));
-        $twig->addFilter(new \Twig_SimpleFilter(
-            'pluralize',
-            function ($input) {
-                return (string) String::create($input)->pluralize();
-            }
-        ));
+        foreach ($this->getTwigFilters() as $twigFilter) {
+            $twig->addFilter($twigFilter);
+        }
 
         return $twig->render($template, $parameters);
     }
 
     /**
-     * @param File $target
+     * Adds the following functions to templates (case-sensitive):
+     * - pluralize: Pluralizes current string.
+     * - lowerfirst: multi byte-compliant lcfirst
+     * - addslashes: php's addslashes function
      *
-     * @throws IOException
+     * @return array|\Twig_SimpleFilter[]
      */
-    public function renderFile(File $target)
+    protected function getTwigFilters()
     {
-        if (!is_dir(dirname($target->getRealPath()))) {
-            mkdir(dirname($target->getRealPath()), 0755, true);
+        if ($this->twigFilters == null) {
+            $this->twigFilters = [
+                new \Twig_SimpleFilter(
+                    'pluralize',
+                    function ($input) {
+                        return (string) String::create($input)->pluralize();
+                    }
+                ),
+                new \Twig_SimpleFilter(
+                    'underscore',
+                    function ($input) {
+                        return (string) String::create($input)->underscored();
+                    }
+                ),
+                new \Twig_SimpleFilter(
+                    'lowerfirst',
+                    function ($input) {
+                        return (string) String::create($input)->lowerCaseFirst();
+                    }
+                ),
+                new \Twig_SimpleFilter('addslashes', 'addslashes')
+            ];
         }
 
-        //Always recreate
-        //Used specifically for auxiliary files (e.g. interfaces) and not the main file that the manipulator generates.
-        //See controller manipulator or manager manipulator for example.
-        if (($target->isServiceFile() || $target->isAuxFile()) && file_exists($target->getRealPath())) {
-            unlink($target->getRealPath()); //Remove before recreating
-        }
-
-        if (false === file_put_contents($target->getRealPath(), $target->getFilteredContents())) {
-            throw new IOException(sprintf(
-                'Could not write file %s. Reason: %s',
-                $target->getRealPath(),
-                error_get_last()
-            ));
-        }
+        return $this->twigFilters;
     }
 }

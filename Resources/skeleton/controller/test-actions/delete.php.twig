@@ -4,10 +4,7 @@
 {% endblock method_definition %}
     {
 {% block method_body %}
-        ${{ entity|lowerfirst }} = $this->container
-            ->get('{{ dataloader_service_ns }}.{{ entity|lower }}')
-            ->getOne()
-        ;
+        ${{ entity|lowerfirst }} = null; //Implement Later
 
         $this->client->request(
             'DELETE',

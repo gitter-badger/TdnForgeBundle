@@ -6,7 +6,7 @@ Usage
 -----
 ```bash
 
-$ ./bin/console tdn:generate:controller [-t|--entity[="..."]] [-l|--entities-location[="..."]] [-o|--overwrite] [-d|--target-directory[="..."]] [-r|--resource] [-g|--with-swagger] [-p|--route-prefix]
+$ ./bin/console forge:generate:controller [--resource] [--with-swagger] [--route-prefix [ROUTE-PREFIX]] [--generate-tests] [-t|--entity [ENTITY]] [-l|--entities-location [ENTITIES-LOCATION]] [-o|--overwrite] [-d|--target-directory [TARGET-DIRECTORY]] [-f|--format [FORMAT]] [-x|--exclude [EXCLUDE]] [-b|--bundle-name [BUNDLE-NAME]]
 
 ```
 
@@ -27,6 +27,9 @@ You should only input one of these:
 <sub>NelmioApiDocBundle must be enabled</sub>
 - route-prefix: Whether to use a Route Prefix annotation. **optional**
 <sub>JmsDiExtraBundle should be enabled to support annotations</sub>
+- generate-tests: Enable test generation for restful controllers. **optional**
+- generate-fixtures: Enable fixtures generation for relevant entities. **optional**
+<sub></sub>
 
 In addition to this document, you can also pass in the `--help` flag for more information when running the command.
 

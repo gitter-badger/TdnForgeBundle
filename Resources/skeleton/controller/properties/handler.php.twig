@@ -1,0 +1,7 @@
+
+    /**
+     * @DI\Inject("{{ bundle|underscore|lower|replace({'_bundle': ''})}}.handler.{{ entity|underscore|lower }}_handler")
+     *
+     * @var {{ entity }}Handler
+     */
+    protected ${{ entity|lowerfirst }}Handler;

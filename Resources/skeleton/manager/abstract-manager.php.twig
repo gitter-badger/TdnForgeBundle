@@ -1,0 +1,120 @@
+<?php
+
+{% block namespace_block %}
+namespace {{ namespace }}\Entity\Manager;
+{% endblock %}
+
+{% block use_statements %}
+use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Id\AssignedGenerator;
+{% endblock use_statements %}
+
+/**
+{% block phpdoc_class_header %}
+ * Class AbstractManager
+ * @package {{ namespace }}\Entity\Manager
+{% endblock phpdoc_class_header %}
+ */
+{% block class_definition %}
+abstract class AbstractManager
+{% endblock class_definition %}
+{
+{% block class_body %}
+    /**
+     * @var EntityManager
+     */
+    protected $em;
+
+    /**
+     * @var EntityRepository
+     */
+    protected $repository;
+
+    /**
+     * @var string
+     */
+    protected $class;
+{% if 'annotation' != format %}
+
+    /**
+     * @param Registry $em
+     * @param string $class
+     */
+    public function __construct(Registry $em, $class)
+    {
+        $this->em         = $em->getManagerForClass($class);
+        $this->class      = $class;
+        $this->repository = $em->getRepository($class);
+    }
+{% endif %}
+
+    /**
+     * @param array $criteria
+     * @param array $orderBy
+     *
+     * @return Object
+     */
+    public function findOneBy(array $criteria, array $orderBy = null)
+    {
+        return $this->repository->findOneBy($criteria, $orderBy);
+    }
+
+    /**
+     * @param array $criteria
+     * @param array $orderBy
+     * @param integer $limit
+     * @param integer $offset
+     *
+     * @return ArrayCollection|Object[]
+     */
+    public function findAllBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+    {
+        return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
+    }
+
+    /**
+     * @param $entity
+     * @param bool $andFlush
+     * @param bool $forceId
+     */
+    public function update($entity, $andFlush = true, $forceId = false)
+    {
+        $this->em->persist($entity);
+
+        if ($forceId) {
+            $metadata = $this->em->getClassMetaData(get_class($entity));
+            $metadata->setIdGenerator(new AssignedGenerator());
+        }
+
+        if ($andFlush) {
+            $this->em->flush();
+        }
+    }
+
+    /**
+     * @param $entity
+     */
+    public function delete($entity) {
+        $this->em->remove($entity);
+        $this->em->flush();
+    }
+
+    /**
+     * @return string
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+    /**
+     * Defining an abstract function with an arbitrary number of parameters is not possible in PHP.
+     */
+    public function create() {
+        throw new \RuntimeException("This method must be implemented in the child class.");
+    }
+{% endblock class_body %}
+}

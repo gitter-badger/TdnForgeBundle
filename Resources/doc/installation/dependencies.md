@@ -1,6 +1,6 @@
 Introduction
 ------------
-There is a few bundles that TdnPilotBundle requires to be installed and configured to run.
+There is a few bundles that TdnForgeBundle requires to be installed and configured to run.
 
 You can also enable features by adding some [extra dependencies] to your `composer.json` file.
 
@@ -85,6 +85,8 @@ fos_rest:
 JMSSerializerBundle
 -------------------
 *Automatically pulled in to all environments*
+
+Used in conjunction with FOSRestBundle for automatic serialization of entities.
 
 Configuration instructions in their [repo docs][jms-serializer-docs].
 

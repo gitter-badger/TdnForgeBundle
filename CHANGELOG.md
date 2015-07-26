@@ -4,10 +4,10 @@
 
 Official bundle release.
 
-TdnPilotBundle allows you to generate core components like REST Controllers (Read API) with automated documentation, 
-sonata scaffolding, encapsulated DAOs, DTOs, and more just based on your entities.
+TdnForgeBundle allows you to generate core components like REST Controllers (Read API) with automated documentation, 
+sonata scaffolding, encapsulated DAOs, DTOs (SF Form Types), and more just based on your entities.
 
-* Pilot (Core) Generator
+* Forge
   * Entity Manager Generator (Easy extend with repository)
   * Form Generator
   * Handler Generator

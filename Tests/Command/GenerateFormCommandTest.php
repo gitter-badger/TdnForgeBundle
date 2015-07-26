@@ -1,19 +1,42 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Command;
+namespace Tdn\ForgeBundle\Tests\Command;
 
-use Tdn\PilotBundle\Command\GenerateFormCommand;
-use Tdn\PilotBundle\Manipulator\FormManipulator;
-use Tdn\PilotBundle\Model\File;
+use Symfony\Component\Console\Tester\CommandTester;
+use Tdn\ForgeBundle\Command\GenerateFormCommand;
+use Tdn\ForgeBundle\Generator\FormGenerator;
+use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\PilotBundle\Tests\Fixtures\FormData;
 
 /**
  * Class GenerateFormCommandTest
- * @package Tdn\PilotBundle\Tests\Command
+ * @package Tdn\ForgeBundle\Tests\Command
  */
 class GenerateFormCommandTest extends AbstractGeneratorCommandTest
 {
+    /**
+     * @param bool $overWrite
+     * @param string $entity
+     *
+     * @dataProvider getOptions
+     */
+    public function testExecute($overWrite, $entity)
+    {
+        $options = [
+            'command'            => $this->getCommand()->getName(),
+            '--overwrite'        => $overWrite,
+            '--target-directory' => $this->getOutDir(),
+            '--entity'           => $entity
+        ];
+
+        $tester = new CommandTester($this->getFullCommand());
+        $tester->execute($options);
+
+        foreach ($this->getProcessedFiles() as $generatedFile) {
+            $this->assertRegExp('#' . $generatedFile->getRealPath() . '#', $tester->getDisplay());
+        }
+    }
+
     /**
      * @return GenerateFormCommand
      */
@@ -28,41 +51,28 @@ class GenerateFormCommandTest extends AbstractGeneratorCommandTest
     public function getOptions()
     {
         return [
-            'command'            => $this->getCommand()->getName(),
-            '--overwrite'        => false,
-            '--target-directory' => $this->getOutDir(),
-            '--entity'           => 'FooBarBundle:Foo'
+            [
+                false,
+                'FooBarBundle:Foo'
+            ]
         ];
     }
 
     /**
-     * @return Mockery\MockInterface|FormManipulator
+     * @param File[] $processedFiles
+     * @return Mockery\MockInterface|FormGenerator
      */
-    protected function getManipulator()
+    protected function getGenerator(array $processedFiles)
     {
-        $manipulator = Mockery::mock(
-            new FormManipulator()
-        );
+        $generator = Mockery::mock('\Tdn\ForgeBundle\Generator\FormGenerator');
 
-        $manipulator
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'prepare'  => $manipulator,
-                    'isValid'  => true,
-                    'generate' => $this->getGeneratedFiles()
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return $manipulator;
+        return $this->configureGeneratorMock($generator, $processedFiles);
     }
 
     /**
      * @return File[]
      */
-    protected function getGeneratedFiles()
+    protected function getProcessedFiles()
     {
         $formTypeFileMock  = $this->getFormTypeMock();
         $exceptionFileMock = $this->getExceptionFileMock();
@@ -78,16 +88,11 @@ class GenerateFormCommandTest extends AbstractGeneratorCommandTest
      */
     protected function getFormTypeMock()
     {
-        $formTypeFileMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $formTypeFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $formTypeFileMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents' => FormData::FOO_FORM_TYPE,
-                    'getBaseName'  => 'FooType',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Form' .
-                        DIRECTORY_SEPARATOR . 'Type',
                     'getRealPath'  => $this->getOutDir() .
                         DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'Type' .
                         DIRECTORY_SEPARATOR . 'FooType.php'
@@ -105,15 +110,11 @@ class GenerateFormCommandTest extends AbstractGeneratorCommandTest
      */
     protected function getExceptionFileMock()
     {
-        $exceptionFileMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $exceptionFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $exceptionFileMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents'  => FormData::FORM_EXCEPTION,
-                    'getBaseName'  => 'InvalidFormException',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Exception',
                     'getRealPath'  => $this->getOutDir() .
                         DIRECTORY_SEPARATOR . 'Exception' . DIRECTORY_SEPARATOR . 'InvalidFormException.php'
                 ]

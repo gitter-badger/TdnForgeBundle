@@ -5,41 +5,39 @@ namespace {{ namespace }}\Entity\Manager;
 {% endblock %}
 
 {% block use_statements %}
-use Doctrine\Bundle\DoctrineBundle\Registry;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
+{% if 'annotation' == format %}
+use JMS\DiExtraBundle\Annotation as DI;
+{% endif %}
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Id\AssignedGenerator;
 use {{ namespace }}\Entity{{ entity_namespace ? '\\' ~ entity_namespace : '' }}\{{ entity }}Interface;
 {% endblock use_statements %}
 
 /**
 {% block phpdoc_class_header %}
+ * Auto-generated for type-hinting and auto-completion purposes.
+ *
+{% if 'annotation' == format %}
+ * @DI\Service("{{ service_id }}")
+ *
+{% endif %}
  * Class {{ entity }}Manager
  * @package {{ namespace }}\Entity\Manager{{ entity_namespace ? '\\' ~ entity_namespace : '' }}
 {% endblock phpdoc_class_header %}
  */
 {% block class_definition %}
-class {{ entity }}Manager implements {{ entity }}ManagerInterface
+class {{ entity }}Manager extends AbstractManager implements {{ entity }}ManagerInterface
 {% endblock class_definition %}
 {
-{% block class_body %}
-    /**
-     * @var EntityManager
-     */
-    protected $em;
+{%- block class_body -%}
+{%- if 'annotation' == format %}
 
     /**
-     * @var EntityRepository
-     */
-    protected $repository;
-
-    /**
-     * @var string
-     */
-    protected $class;
-
-    /**
+     * @DI\InjectParams({
+     *     "em" = @DI\Inject("doctrine"),
+     *     "class" = "{{ namespace }}\Entity\{{ entity }}",
+     *     "formFactory" = @DI\Inject("form.factory")
+     * })
+     *
      * @param Registry $em
      * @param string $class
      */
@@ -49,6 +47,7 @@ class {{ entity }}Manager implements {{ entity }}ManagerInterface
         $this->class      = $class;
         $this->repository = $em->getRepository($class);
     }
+{% endif %}
 
     /**
      * @param array $criteria
@@ -56,11 +55,9 @@ class {{ entity }}Manager implements {{ entity }}ManagerInterface
      *
      * @return {{ entity }}Interface
      */
-    public function find{{ entity }}By(
-        array $criteria,
-        array $orderBy = null
-    ) {
-        return $this->repository->findOneBy($criteria, $orderBy);
+    public function find{{ entity }}By(array $criteria, array $orderBy = null)
+    {
+        return parent::findOneBy($criteria, $orderBy);
     }
 
     /**
@@ -71,13 +68,18 @@ class {{ entity }}Manager implements {{ entity }}ManagerInterface
      *
      * @return ArrayCollection|{{ entity }}Interface[]
      */
+{% if entity|pluralize|length >= 23 %}
     public function find{{ entity|pluralize }}By(
         array $criteria,
         array $orderBy = null,
         $limit = null,
         $offset = null
     ) {
-        return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
+{% else %}
+    public function find{{ entity|pluralize }}By(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+    {
+{% endif %}
+        return parent::findAllBy($criteria, $orderBy, $limit, $offset);
     }
 
     /**
@@ -85,39 +87,31 @@ class {{ entity }}Manager implements {{ entity }}ManagerInterface
      * @param bool $andFlush
      * @param bool $forceId
      */
+{% if entity|length >= 22 %}
     public function update{{ entity }}(
         {{ entity }}Interface ${{ entity|lowerfirst }},
         $andFlush = true,
         $forceId = false
     ) {
-        $this->em->persist(${{ entity|lowerfirst }});
-
-        if ($forceId) {
-            $metadata = $this->em->getClassMetaData(get_class(${{ entity|lowerfirst }}));
-            $metadata->setIdGenerator(new AssignedGenerator());
-        }
-
-        if ($andFlush) {
-            $this->em->flush();
-        }
+{% else %}
+    public function update{{ entity }}({{ entity }}Interface ${{ entity|lowerfirst }}, $andFlush = true, $forceId = false)
+    {
+{% endif %}
+        parent::update(${{ entity|lowerfirst }}, $andFlush, $forceId);
     }
 
     /**
      * @param {{ entity }}Interface ${{ entity|lowerfirst }}
      */
+{% if entity|length >= 27 %}
     public function delete{{ entity }}(
         {{ entity }}Interface ${{ entity|lowerfirst }}
     ) {
-        $this->em->remove(${{ entity|lowerfirst }});
-        $this->em->flush();
-    }
-
-    /**
-     * @return string
-     */
-    public function getClass()
+{% else %}
+    public function delete{{ entity }}({{ entity }}Interface ${{ entity|lowerfirst }})
     {
-        return $this->class;
+{% endif %}
+        parent::delete(${{ entity|lowerfirst }});
     }
 
     /**

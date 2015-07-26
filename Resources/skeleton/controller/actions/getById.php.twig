@@ -30,17 +30,20 @@
      *
      * @param $id
      *
+     * @throws NotFoundHttpException When the resource is not found.
+     *
      * @return Response
      */
 {% endblock phpdoc_method_header %}
 {% block method_definition %}
+{% if 'annotation' == format %}
     public function getAction($id)
+{% else %}
+    public function get{{ entity }}Action($id)
+{% endif %}
 {% endblock method_definition %}
     {
 {% block method_body %}
-        $answer{{ resource ? "['" ~ entity|lowerfirst|pluralize ~  "'][]" }} = $this->getOr404($id);
-
-        return $answer;
+        return $this->getOr404($id);
 {% endblock method_body %}
-{% block method_return '' %}
     }

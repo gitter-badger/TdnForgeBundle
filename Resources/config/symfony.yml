@@ -1,0 +1,9 @@
+parameters:
+    tdn_forge.symfony.service.manager.class: Tdn\ForgeBundle\Services\Symfony\ServiceManager
+    tdn_forge.symfony.routing.manager.class: Tdn\ForgeBundle\Services\Symfony\RoutingManager
+
+services:
+    tdn_forge.symfony.service.manager:
+        class: %tdn_forge.symfony.service.manager.class%
+    tdn_forge.symfony.routing.manager:
+        class: %tdn_forge.symfony.routing.manager.class%

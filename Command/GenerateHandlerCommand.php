@@ -1,22 +1,23 @@
 <?php
 
-namespace Tdn\PilotBundle\Command;
+namespace Tdn\ForgeBundle\Command;
 
-use Tdn\PilotBundle\Manipulator\HandlerManipulator;
+use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
+use Tdn\ForgeBundle\Generator\Factory\HandlerGeneratorFactory;
 
 /**
  * Class GenerateHandlerCommand
  *
  * Generates a REST handler that provide a way of managing your entities in a controller context.
  *
- * @package Tdn\PilotBundle\Command
+ * @package Tdn\ForgeBundle\Command
  */
 class GenerateHandlerCommand extends AbstractGeneratorCommand
 {
     /**
      * @var string
      */
-    const NAME = 'tdn:generate:handler';
+    const NAME = 'forge:generate:handler';
 
     /**
      * @var string
@@ -24,11 +25,11 @@ class GenerateHandlerCommand extends AbstractGeneratorCommand
     const DESCRIPTION = 'Generates an entity REST handler file for a controller.';
 
     /**
-     * @return HandlerManipulator
+     * @return string
      */
-    protected function createManipulator()
+    protected function getType()
     {
-        return new HandlerManipulator();
+        return GeneratorFactoryInterface::TYPE_HANDLER_GENERATOR;
     }
 
     /**

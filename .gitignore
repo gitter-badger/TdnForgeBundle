@@ -1,5 +1,5 @@
 vendor
-bin
+bin/*
 composer.phar
 build
 php-git-hooks.yml

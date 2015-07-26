@@ -1,7 +1,7 @@
 
     /**
 {% block phpdoc_method_header %}
-     * Get all {{ entity }}.
+     * Get all {{ entity }} types.
      *
 {% block documentation %}
 {% if swagger %}
@@ -18,25 +18,25 @@
      *
 {% endif %}
 {% endblock documentation %}
-     * @QueryParam(
+     * @Rest\QueryParam(
      *   name="offset",
      *   requirements="\d+",
      *   nullable=true,
-     *   description="Offset from which to start listing notes."
+     *   description="Offset from which to start. Defaults to 0."
      * )
-     * @QueryParam(
+     * @Rest\QueryParam(
      *   name="limit",
      *   requirements="\d+",
      *   default="20",
-     *   description="How many notes to return."
+     *   description="Max number of results."
      * )
-     * @QueryParam(
+     * @Rest\QueryParam(
      *   name="order_by",
      *   nullable=true,
      *   array=true,
      *   description="Order by fields. Must be an array ie. &order_by[name]=ASC&order_by[description]=DESC"
      * )
-     * @QueryParam(
+     * @Rest\QueryParam(
      *   name="filters",
      *   nullable=true,
      *   array=true,
@@ -53,7 +53,11 @@
 {% endblock phpdoc_method_annotations %}
      */
 {% block method_definition %}
+{% if 'annotation' == format %}
     public function cgetAction(ParamFetcherInterface $paramFetcher)
+{% else %}
+    public function get{{ entity|pluralize }}Action(ParamFetcherInterface $paramFetcher)
+{% endif %}
 {% endblock method_definition %}
     {
 {% block method_body %}
@@ -69,19 +73,25 @@
             return $item;
         }, $criteria);
 
+{% if entity|pluralize|length >= 37 %}
         $result = $this->get{{ entity }}Handler()
             ->find{{ entity|pluralize }}By(
                 $criteria,
                 $orderBy,
                 $limit,
                 $offset
-            );
+            )
+        ;
+{% else %}
+        $result = $this->get{{ entity }}Handler()->find{{ entity|pluralize }}By(
+            $criteria,
+            $orderBy,
+            $limit,
+            $offset
+        );
+{% endif %}
 
         //If there are no matches return an empty array
-        $answer{{ resource ? "['" ~ entity|lowerfirst|pluralize ~  "']" }} =
-            $result ? $result : new ArrayCollection([]);
-
-        return $answer;
+        return $result ?: new ArrayCollection([]);
 {% endblock method_body %}
-{% block method_return '' %}
     }

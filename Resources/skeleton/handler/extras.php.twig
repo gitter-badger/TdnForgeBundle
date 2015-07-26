@@ -8,11 +8,16 @@
      *
      * @return {{ entity }}Interface
      */
+{% if entity|length >= 18 %}
     protected function processForm(
         {{ entity }}Interface ${{ entity|lowerfirst }},
         array $parameters,
         $method = "PUT"
     ) {
+{% else %}
+    protected function processForm({{ entity }}Interface ${{ entity|lowerfirst }}, array $parameters, $method = "PUT")
+    {
+{% endif %}
         $form = $this->formFactory->create(
             new {{ entity }}Type(),
             ${{ entity|lowerfirst }},

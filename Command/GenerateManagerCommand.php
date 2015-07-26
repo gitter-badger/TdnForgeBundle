@@ -1,8 +1,8 @@
 <?php
 
-namespace Tdn\PilotBundle\Command;
+namespace Tdn\ForgeBundle\Command;
 
-use Tdn\PilotBundle\Manipulator\ManagerManipulator;
+use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
 
 /**
  * Class GenerateManagerCommand
@@ -10,7 +10,7 @@ use Tdn\PilotBundle\Manipulator\ManagerManipulator;
  * Generates a entity manager specific for an entity (DAO)
  * with a repository as a dependency.
  *
- * @package Tdn\PilotBundle\Command
+ * @package Tdn\ForgeBundle\Command
  */
 class GenerateManagerCommand extends AbstractGeneratorCommand
 {
@@ -25,11 +25,11 @@ class GenerateManagerCommand extends AbstractGeneratorCommand
     const DESCRIPTION = 'Generates an entity manager (Repository + DAO patterns) for a given entity.';
 
     /**
-     * @return ManagerManipulator
+     * @return string
      */
-    protected function createManipulator()
+    protected function getType()
     {
-        return new ManagerManipulator();
+        return GeneratorFactoryInterface::TYPE_MANAGER_GENERATOR;
     }
 
     /**

@@ -1,0 +1,7 @@
+parameters:
+    tdn_forge.generator.factory.standard_generator_factory.class: Tdn\ForgeBundle\Generator\Factory\StandardGeneratorFactory
+
+services:
+    tdn_forge.generator.factory.standard_generator_factory:
+        class: %tdn_forge.generator.factory.standard_generator_factory.class%
+        arguments: ['@tdn_forge.template.strategy.default', '@tdn_forge.symfony.service.manager']

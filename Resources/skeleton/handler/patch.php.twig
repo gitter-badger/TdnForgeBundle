@@ -5,10 +5,15 @@
      *
      * @return {{ entity }}Interface
      */
+{% if entity|length >= 30 %}
     public function patch(
-        {{ entity }}Interface ${{ entity|lowerfirst }},
-        array $parameters
+    {{ entity }}Interface ${{ entity|lowerfirst }},
+    array $parameters
     ) {
+{% else %}
+    public function patch({{ entity }}Interface ${{ entity|lowerfirst }}, array $parameters)
+    {
+{% endif %}
 {% block method_body %}
         return $this->processForm(
             ${{ entity|lowerfirst }},

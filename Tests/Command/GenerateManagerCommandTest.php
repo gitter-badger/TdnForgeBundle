@@ -1,19 +1,45 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Command;
+namespace Tdn\ForgeBundle\Tests\Command;
 
-use Tdn\PilotBundle\Command\GenerateManagerCommand;
-use Tdn\PilotBundle\Manipulator\ManagerManipulator;
-use Tdn\PilotBundle\Model\File;
+use Symfony\Component\Console\Tester\CommandTester;
+use Tdn\ForgeBundle\Command\GenerateManagerCommand;
+use Tdn\ForgeBundle\Generator\ManagerGenerator;
+use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\PilotBundle\Tests\Fixtures\ManagerData;
 
 /**
  * Class GenerateManagerCommandTest
- * @package Tdn\PilotBundle\Tests\Command
+ * @package Tdn\ForgeBundle\Tests\Command
  */
 class GenerateManagerCommandTest extends AbstractGeneratorCommandTest
 {
+    /**
+     * @param bool $overWrite
+     * @param string $format
+     * @param string $entity
+     * @param File[] $files
+     *
+     * @dataProvider optionsProvider
+     */
+    public function testExecute($overWrite, $format, $entity, array $files)
+    {
+        $options = [
+            'command'            => $this->getCommand()->getName(),
+            '--overwrite'        => $overWrite,
+            '--target-directory' => $this->getOutDir(),
+            '--format'           => $format,
+            '--entity'           => $entity
+        ];
+
+        $tester = new CommandTester($this->getFullCommand());
+        $tester->execute($options);
+
+        foreach ($files as $generatedFile) {
+            $this->assertRegExp('#' . $generatedFile->getRealPath() . '#', $tester->getDisplay());
+        }
+    }
+
     /**
      * @return GenerateManagerCommand
      */
@@ -25,54 +51,99 @@ class GenerateManagerCommandTest extends AbstractGeneratorCommandTest
     /**
      * @return array
      */
-    public function getOptions()
+    public function optionsProvider()
     {
         return [
-            'command'            => $this->getCommand()->getName(),
-            '--overwrite'        => false,
-            '--target-directory' => $this->getOutDir(),
-            '--entity'           => 'FooBarBundle:Foo'
+            [
+                false,
+                'xml',
+                'FooBarBundle:Foo',
+                $this->getProcessedXmlFiles()
+            ],
+            [
+                false,
+                'yaml',
+                'FooBarBundle:Foo',
+                $this->getProcessedYamlFiles()
+            ]
         ];
     }
 
     /**
-     * @return Mockery\MockInterface|ManagerManipulator
+     * @param File[] $processedFiles
+     *
+     * @return Mockery\MockInterface|ManagerGenerator
      */
-    protected function getManipulator()
+    protected function getGenerator(array $processedFiles)
     {
-        $manipulator = Mockery::mock(
-            new ManagerManipulator()
-        );
+        $generator = Mockery::mock('\Tdn\ForgeBundle\Generator\ManagerGenerator');
 
-        $manipulator
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'prepare'  => $manipulator,
-                    'isValid'  => true,
-                    'generate' => $this->getGeneratedFiles()
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return $manipulator;
+        return $this->configureGeneratorMock($generator, $processedFiles);
     }
 
     /**
      * @return File[]
      */
-    protected function getGeneratedFiles()
+    protected function getProcessedFiles()
     {
-        $managerFileMock      = $this->getManagerFileMock();
-        $mgrInterfaceFileMock = $this->getMgrInterfaceFileMock();
-        $mgrServiceMock       = $this->getManagerServiceMock();
+        return array_merge($this->getProcessedYamlFiles(), $this->getProcessedXmlFiles());
+    }
+
+    /**
+     * @return File[]
+     */
+    protected function getProcessedXmlFiles()
+    {
+        $abstractManagerFileMock = $this->getAbstractManagerFileMock();
+        $managerFileMock = $this->getManagerFileMock();
+        $managerInterfaceMock = $this->getMgrInterfaceFileMock();
+        $managerServiceFile = $this->getXmlManagerServiceMock();
 
         return [
-            $managerFileMock->getRealPath()      => $managerFileMock,
-            $mgrInterfaceFileMock->getRealPath() => $mgrInterfaceFileMock,
-            $mgrServiceMock->getRealPath()       => $mgrServiceMock
+            $abstractManagerFileMock->getRealPath() => $abstractManagerFileMock,
+            $managerFileMock->getRealPath() => $managerFileMock,
+            $managerInterfaceMock->getRealPath() => $managerInterfaceMock,
+            $managerServiceFile->getRealPath() => $managerServiceFile
         ];
+    }
+
+    /**
+     * @return File[]
+     */
+    protected function getProcessedYamlFiles()
+    {
+        $abstractManagerFileMock = $this->getAbstractManagerFileMock();
+        $managerFileMock = $this->getManagerFileMock();
+        $managerInterfaceMock = $this->getMgrInterfaceFileMock();
+        $managerServiceFile = $this->getYamlManagerServiceMock();
+
+        return [
+            $abstractManagerFileMock->getRealPath() => $abstractManagerFileMock,
+            $managerFileMock->getRealPath() => $managerFileMock,
+            $managerInterfaceMock->getRealPath() => $managerInterfaceMock,
+            $managerServiceFile->getRealPath() => $managerServiceFile
+        ];
+    }
+
+    /**
+     * @return File
+     */
+    protected function getAbstractManagerFileMock()
+    {
+        $abstractManagerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
+        $abstractManagerFileMock
+            ->shouldDeferMissing()
+            ->shouldReceive(
+                [
+                    'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
+                        'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'AbstractManager.php'
+                ]
+            )
+            ->withAnyArgs()
+            ->zeroOrMoreTimes()
+        ;
+
+        return $abstractManagerFileMock;
     }
 
     /**
@@ -80,16 +151,11 @@ class GenerateManagerCommandTest extends AbstractGeneratorCommandTest
      */
     protected function getManagerFileMock()
     {
-        $managerFileMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $managerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $managerFileMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents'  => ManagerData::FOO_MANAGER,
-                    'getBaseName'  => 'FooManager',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'FooManager.php'
                 ]
@@ -106,16 +172,11 @@ class GenerateManagerCommandTest extends AbstractGeneratorCommandTest
      */
     protected function getMgrInterfaceFileMock()
     {
-        $mgrInterfaceFileMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $mgrInterfaceFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $mgrInterfaceFileMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents'  => ManagerData::FOO_MANAGER_INTERFACE,
-                    'getBaseName'  => 'FooManagerInterface',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'FooManagerInterface.php'
                 ]
@@ -130,18 +191,34 @@ class GenerateManagerCommandTest extends AbstractGeneratorCommandTest
     /**
      * @return File
      */
-    protected function getManagerServiceMock()
+    protected function getYamlManagerServiceMock()
     {
-        $mgrServiceMock = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $mgrServiceMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $mgrServiceMock
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents'  => ManagerData::FOO_MANAGER_SERVICE_XML,
-                    'getBaseName'  => 'managers',
-                    'getExtension' => 'xml',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
+                        'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'managers.yaml'
+                ]
+            )
+            ->withAnyArgs()
+            ->zeroOrMoreTimes()
+        ;
+
+        return $mgrServiceMock;
+    }
+
+    /**
+     * @return File
+     */
+    protected function getXmlManagerServiceMock()
+    {
+        $mgrServiceMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
+        $mgrServiceMock
+            ->shouldDeferMissing()
+            ->shouldReceive(
+                [
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'managers.xml'
                 ]

@@ -1,6 +1,7 @@
 parameters:
-    tdn_pilot.template.strategy.twig_template_strategy.class: Tdn\PilotBundle\Template\Strategy\TwigStrategy
+    tdn_forge.template.strategy.twig_template_strategy.class: Tdn\ForgeBundle\Template\Strategy\TwigStrategy
 
 services:
-    tdn_pilot.template.strategy.twig_template_strategy:
-        class: %tdn_pilot.template.strategy.twig_template_strategy.class%
+    tdn_forge.template.strategy.default:
+        class: %tdn_forge.template.strategy.twig_template_strategy.class%
+        arguments: ['@tdn_forge.template.postprocessor.postprocessor_chain']

@@ -4,8 +4,7 @@
 {% endblock method_definition %}
     {
 {% block method_body %}
-        $data = $this->container->get('{{ dataloader_service_ns }}.{{ entity|lower }}')
-            ->create();
+        $data = null; //Implement Later
         $this->createJsonRequest(
             'POST',
             $this->getUrl('post_{{ entity|lower|pluralize }}'),

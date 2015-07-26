@@ -1,0 +1,19 @@
+parameters:
+    tdn_forge.template.postprocessor.postprocessor_chain.class: Tdn\ForgeBundle\Template\PostProcessor\PostProcessorChain
+    tdn_forge.template.postprocessor.abstract_postprocessor.class: Tdn\ForgeBundle\Template\PostProcessor\AbstractPostProcessor
+    tdn_forge.template.postprocessor.psr_postprocessor.class: Tdn\ForgeBundle\Template\PostProcessor\PsrPostProcessor
+
+services:
+    tdn_forge.template.postprocessor.postprocessor_chain:
+        class: %tdn_forge.template.postprocessor.postprocessor_chain.class%
+
+    tdn_forge.template.postprocessor.abstract_postprocessor:
+        abstract: true
+        class: %tdn_forge.template.postprocessor.abstract_postprocessor.class%
+        arguments: ["%kernel.root_dir%"]
+
+    tdn_forge.template.postprocessor.psr_postprocessor:
+        parent: tdn_forge.template.postprocessor.abstract_postprocessor
+        class: %tdn_forge.template.postprocessor.psr_postprocessor.class%
+        tags:
+            - { name: tdn_forge.template.postprocessor}
