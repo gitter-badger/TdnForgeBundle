@@ -50,6 +50,14 @@ class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
     }
 
     /**
+     * @return string
+     */
+    public function getCommandName()
+    {
+        return 'forge:generate:controller';
+    }
+
+    /**
      * @return array
      */
     public function optionsProvider()

@@ -26,6 +26,18 @@ abstract class AbstractGeneratorCommandTest extends AbstractCommandTest
     abstract protected function getProcessedFiles();
 
     /**
+     * @return string
+     */
+    abstract protected function getCommandName();
+
+    public function testCommandName()
+    {
+        $command = $this->getFullCommand();
+
+        $this->assertEquals($this->getCommandName(), $command->getName());
+    }
+
+    /**
      * @return void
      */
     public function testGenerator()

@@ -8,7 +8,11 @@ use Tdn\ForgeBundle\Services\Doctrine\EntityHelper;
 use Tdn\ForgeBundle\Tests\Traits\BundleMock;
 use Tdn\ForgeBundle\Tests\Traits\MetadataMock;
 
-class EntityManagerTest extends \PHPUnit_Framework_TestCase
+/**
+ * Class EntityHelperTest
+ * @package Tdn\ForgeBundle\Tests\Services\Doctrine
+ */
+class EntityHelperTest extends \PHPUnit_Framework_TestCase
 {
     use BundleMock;
     use MetadataMock;
@@ -18,18 +22,9 @@ class EntityManagerTest extends \PHPUnit_Framework_TestCase
      */
     protected $entityUtils;
 
-    public function __construct($name = null, array $data = array(), $dataName = '')
-    {
-        $this->bundle = $this->createBundle();
-        $this->metadata = $this->createMetadata();
-
-        parent::__construct($name, $data, $dataName);
-    }
-
     protected function setUp()
     {
-        $this->entityUtils = $this->getEntityUtils();
-        $this->bundle      = $this->createBundle();
+        $this->entityUtils = $this->getEntityHelper();
     }
 
     public function testGetClassesInDirectory()
@@ -67,21 +62,21 @@ class EntityManagerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertInstanceOf(
             '\Doctrine\ORM\Mapping\ClassMetadata',
-            $this->entityUtils->getMetadata($this->bundle, 'Foo')
+            $this->entityUtils->getMetadata($this->getBundle(), 'Foo')
         );
     }
 
     /**
      * @return EntityHelper
      */
-    private function getEntityUtils()
+    private function getEntityHelper()
     {
         $entityUtils = Mockery::mock(new EntityHelper($this->getDoctrine()));
         $entityUtils
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getMetadata' => $this->metadata
+                    'getMetadata' => $this->getMetadata()
                 ]
             )
             ->zeroOrMoreTimes()

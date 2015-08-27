@@ -41,6 +41,14 @@ class GenerateHandlerCommandTest extends AbstractGeneratorCommandTest
     }
 
     /**
+     * @return string
+     */
+    public function getCommandName()
+    {
+        return 'forge:generate:handler';
+    }
+
+    /**
      * @return GenerateHandlerCommand
      */
     protected function getCommand()
