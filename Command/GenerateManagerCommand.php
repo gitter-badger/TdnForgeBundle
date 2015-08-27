@@ -17,7 +17,7 @@ class GenerateManagerCommand extends AbstractGeneratorCommand
     /**
      * @var string
      */
-    const NAME = 'tdn:generate:manager';
+    const NAME = 'forge:generate:manager';
 
     /**
      * @var string

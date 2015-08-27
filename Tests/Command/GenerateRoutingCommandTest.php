@@ -44,6 +44,14 @@ class GenerateRoutingCommandTest extends AbstractGeneratorCommandTest
     }
 
     /**
+     * @return string
+     */
+    public function getCommandName()
+    {
+        return 'forge:generate:routing';
+    }
+
+    /**
      * @return GenerateRoutingCommand
      */
     protected function getCommand()

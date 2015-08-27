@@ -38,6 +38,14 @@ class GenerateFormCommandTest extends AbstractGeneratorCommandTest
     }
 
     /**
+     * @return string
+     */
+    public function getCommandName()
+    {
+        return 'forge:generate:form';
+    }
+
+    /**
      * @return GenerateFormCommand
      */
     protected function getCommand()

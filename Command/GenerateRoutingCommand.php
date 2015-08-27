@@ -25,7 +25,7 @@ class GenerateRoutingCommand extends AbstractGeneratorCommand
     /**
      * @var string
      */
-    const NAME = 'tdn:generate:routing';
+    const NAME = 'forge:generate:routing';
 
     /**
      * @var string
