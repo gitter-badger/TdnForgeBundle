@@ -1,14 +1,17 @@
 <?xml version="1.0"?>
-<ruleset name="TdnPilotBundle Coding Standard">
-    <description>Coding standard for TdnPilotBundle</description>
+<ruleset name="TdnForgeBundle Coding Standard">
+    <description>Coding standard for TdnForgeBundle</description>
+    <file>ClassLoader</file>
     <file>Command</file>
     <file>DependencyInjection</file>
-    <file>Manipulator</file>
+    <file>Exception</file>
+    <file>Generator</file>
     <file>Model</file>
     <file>Template</file>
     <file>Services</file>
     <file>Tests</file>
-    <file>TdnPilotBundle.php</file>
+    <file>Traits</file>
+    <file>TdnForgeBundle.php</file>
     <exclude-pattern>Tests/Fixtures/*</exclude-pattern>
     <arg name="extensions" value="php" />
     <arg value="sp" />

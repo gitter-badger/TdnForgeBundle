@@ -6,13 +6,13 @@ If all the previous sections were accomplished the commands should be visible in
 $ ./bin/console
 ```
 
-Please note that running the pilot command is the **recommended** way to use this bundle.
+Please note that running the forge command is the **recommended** way to use this bundle.
 
 If executing single commands, please mind the order.
 
 The generated files rely on each other to some extent (E.g. Controllers rely on handlers which rely on forms which use the managers).
 
-The following list (sans pilot) displays the commands in the order they should be executed.
+The following list (sans forge) displays the commands in the order they should be executed.
 
 You may use the appropriate command to generate the required files, or you may create them manually. 
 However, if creating the files manually it is recommended that you **extend the generated code instead** 
@@ -22,7 +22,7 @@ Commands
 --------
 #### [tdn:generate:project](generate-project.md)
 
-Pilots a project based on entities.
+Forges a project based on entities.
 
 <sub>**Each command has validation to check for any files it expects/has dependencies on**</sub>
 

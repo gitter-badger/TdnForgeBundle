@@ -1,13 +1,13 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Model;
+namespace Tdn\ForgeBundle\Tests\Model;
 
 use Symfony\Component\DependencyInjection\Definition;
-use Tdn\PilotBundle\Model\ServiceDefinition;
+use Tdn\ForgeBundle\Model\ServiceDefinition;
 
 /**
  * Class ServiceDefinitionTest
- * @package Tdn\PilotBundle\Tests\Model
+ * @package Tdn\ForgeBundle\Tests\Model
  */
 class ServiceDefinitionTest extends \PHPUnit_Framework_TestCase
 {

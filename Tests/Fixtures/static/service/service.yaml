@@ -1,0 +1,7 @@
+parameters:
+    foo_bar.manager.foo_manager.class: Foo\BarBundle\Entity\Manager\FooManager
+
+services:
+    foo_bar.manager.foo_manager:
+        class: %foo_bar.manager.foo_manager.class%
+        arguments: ['@doctrine', Foo\BarBundle\Entity\Foo]

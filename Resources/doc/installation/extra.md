@@ -10,16 +10,16 @@ At a glance
 -----------
 
 * For Annotations
-  * [schmittjoh/JMSDiExtraBundle](#jmsdiextrabundle)
+  * [schmittjoh/JMSDiExtraBundle](#jmsdiextrabundle) [~1.5]
 * For documentation (swagger-ish)
-  * [nelmio/NelmioApiDocBundle](#nelmioapidocbundle)
+  * [nelmio/NelmioApiDocBundle](#nelmioapidocbundle) [~2.9]
 * For Sonata Scaffolding
-  * [sonata-project/SonataDoctrineORMAdminBundle](#sonatadoctrineormadminbundle)
-  * [sonata-project/SonataAdminBundle](#sonataadmin)
-* For Test generation
-  * [liip/LiipFunctionalTestBundle](#liipfunctionaltestbundle)
-  * [fzaninotto/faker](#faker)
-
+  * [sonata-project/SonataDoctrineORMAdminBundle](#sonatadoctrineormadminbundle) [~2.3]
+  * [sonata-project/SonataAdminBundle](#sonataadmin) [~2.3]
+* For Test & Fixture generation
+  * [liip/LiipFunctionalTestBundle](#liipfunctionaltestbundle) [~1.2]
+  * [fzaninotto/faker](#faker) [~1.5]
+  * [hautelook/AliceBundle](#alicebundle) [dev-master]
 
 JMSDiExtraBundle
 ----------------
@@ -27,21 +27,20 @@ JMSDiExtraBundle
 
 Add to composer:
 ```bash
-$ composer require nelmio/api-doc-bundle ~2.8
+$ composer require nelmio/api-doc-bundle
 ```
 
 Configuration instructions in their [repo docs][jms-di-extra-docs].
 
 JMSDiExtraBundle allows for DI using annotations. It is used whenever the format is set to `annotation`
-on some of the commands such as:
+on some of the generator commands such as:
 
 - Controller
+- Handler
+- Manager
+- 
 
-**Example Configuration:**
-
-```yml
-```
-
+**No configuration needed to work**
 
 NelmioApiDocBundle 
 ------------------
@@ -49,7 +48,7 @@ NelmioApiDocBundle
 
 Add to composer:
 ```bash
-$ composer require nelmio/api-doc-bundle ~2.8
+$ composer require nelmio/api-doc-bundle
 ```
 
 Configuration instructions in their [repo docs][nelmio-api-docs].
@@ -63,7 +62,7 @@ It is used any time the `--with-swagger` flag is used in the controller generato
 ```yml
 # app/config/config.yml
 nelmio_api_doc:
-    name: Excalibur API
+    name: API Name
     sandbox:
         body_format:
             formats:
@@ -78,14 +77,13 @@ nelmio_api_doc:
             default_format: json
 ```
 
-
 SonataDoctrineORMAdminBundle
 ----------------------------
 *Must be added to your composer.json `require-dev` or `require` section to enable **sonata scaffolding***
 
 Add to composer:
 ```bash
-$ composer require sonata-project/doctrine-orm-admin-bundle ~2.7
+$ composer require sonata-project/doctrine-orm-admin-bundle
 ```
 
 Configuration instructions in their [repo docs][sonata-doctrine-docs].
@@ -95,10 +93,9 @@ Configuration instructions in their [repo docs][sonata-doctrine-docs].
 ```yml
 ```
 
-
 SonataAdminBundle
 -----------------
-* Will be pulled automatically by SonataDoctrineORMAdminBundle*
+*Will be pulled automatically by SonataDoctrineORMAdminBundle. Used to enable **sonata scaffolding*** 
 
 Configuration instructions in their [repo docs][sonata-admin-docs].
 
@@ -107,14 +104,13 @@ Configuration instructions in their [repo docs][sonata-admin-docs].
 ```yml
 ```
 
-
 LiipFunctionalTestBundle 
 ------------------------
 *Must be added to your composer.json `require-dev` section to enable **test generation***
 
 Add to composer:
 ```bash
-$ composer require --dev nelmio/api-doc-bundle ~2.7
+$ composer require --dev nelmio/api-doc-bundle
 ```
 
 This bundle is used in the generation of tests for your entities.
@@ -128,15 +124,24 @@ Configuration instructions in their [repo docs][liip-functional-test-docs].
 liip_functional_test: ~
 ```
 
-
 Faker
 -----
-*Must be added to your composer.json `require-dev` section to enable **fixture generation***
+*Must be added to your composer.json `require-dev` section to enable **test generation***
 
 Add to composer:
 ```bash
-$ composer require --dev fzaninotto/faker ~1.4
+$ composer require --dev fzaninotto/faker
 ```
+
+AliceBundle
+-----------
+*Must be added to your composer.json `require-dev` section to enable **test generation***
+
+Add to composer:
+```bash
+$ composer require --dev hautelook/alice-bundle dev-master
+```
+
 
 [jms-di-extra-docs]: 
 [nelmio-api-docs]: https://github.com/nelmio/NelmioApiDocBundle/blob/master/Resources/doc/index.md

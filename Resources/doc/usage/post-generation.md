@@ -1,6 +1,6 @@
 Post Notes
 ==========
-After generation, if you used the pilot, manager, or handler generators please note that
+After generation, if you used the forge, manager, or handler generators please note that
 some modifications to your `<BundleName>Extension.php` file are required.
 
 1. Make sure to instantiate any loaders required (yml, xml, ini, etc).

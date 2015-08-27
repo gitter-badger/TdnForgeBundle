@@ -1,16 +1,17 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Model;
+namespace Tdn\ForgeBundle\Tests\Model;
 
 use Symfony\Component\Finder\SplFileInfo;
-use Tdn\PilotBundle\Model\File;
+use Tdn\ForgeBundle\Model\File;
 
 /**
  * Class FileTest
- * @package Tdn\PilotBundle\Tests\Model
+ * @package Tdn\ForgeBundle\Tests\Model
  */
 class FileTest extends \PHPUnit_Framework_TestCase
 {
+    const FILE_CONTENTS = 'Esto es una prueba ;)';
     /**
      * @var File
      */
@@ -18,12 +19,19 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->file = new File(sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('file') . '.php');
+        $this->file = new File(
+            sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('file') . '.php',
+            self::FILE_CONTENTS
+        );
+
+        touch($this->file->getRealPath());
     }
 
     public function testInstanceOf()
     {
+        $this->assertTrue($this->file instanceof \SplFileInfo);
         $this->assertTrue($this->file instanceof SplFileInfo);
+        $this->assertTrue($this->file instanceof File);
     }
 
     public function testContents()
@@ -33,10 +41,9 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->file->isFile());
     }
 
-    public function testFilteredContents()
+    public function testContent()
     {
-        $this->file->setFilteredContents('Esto es una prueba ;)');
-        $this->assertEquals('Esto es una prueba ;)', $this->file->getFilteredContents());
+        $this->assertEquals(self::FILE_CONTENTS, $this->file->getContent());
     }
 
     public function testAuxFile()
@@ -52,6 +59,14 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $this->file->setServiceFile(true);
         $this->assertTrue($this->file->isServiceFile());
     }
+
+    public function testIsDirty()
+    {
+        $this->assertTrue($this->file->isDirty());
+        $this->file->openFile('w')->fwrite(self::FILE_CONTENTS);
+        $this->assertFalse($this->file->isDirty());
+    }
+
 
     protected function tearDown()
     {

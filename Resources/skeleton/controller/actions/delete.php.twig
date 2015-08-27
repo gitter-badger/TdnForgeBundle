@@ -29,29 +29,49 @@
      * @Rest\View(statusCode=204)
      *
      * @param $id
-     * @internal {{ entity }}Interface ${{ entity|lowerfirst }}
+     *
+     * @throws NotFoundHttpException When the resource is not found.
+     * @throws \Exception When an error occurs when deleting resource.
      *
      * @return Response
 {% endblock phpdoc_method_header %}
 {% block phpdoc_method_annotations %}
-{% if 'annotation' == format %}{% endif %}
 {% endblock phpdoc_method_annotations %}
      */
 {% block method_definition %}
+{% if 'annotation' == format %}
     public function deleteAction($id)
+{% else %}
+    public function delete{{ entity }}Action($id)
+{% endif %}
 {% endblock method_definition %}
     {
 {% block method_body %}
+{% if entity|length >= 88 %}
+        ${{ entity|lowerfirst }} =
+            $this->getOr404($id);
+{% else %}
         ${{ entity|lowerfirst }} = $this->getOr404($id);
+{% endif %}
 
         try {
+{% if entity|length >= 25 %}
+{% if entity|length >= 48 %}
             $this->get{{ entity }}Handler()
-                ->delete{{ entity }}(${{ entity|lowerfirst }});
+                ->delete{{ entity }}(${{ entity|lowerfirst }})
+            ;
+{% else %}
+            $this->get{{ entity }}Handler()->delete{{ entity }}(
+                ${{ entity|lowerfirst }}
+            );
+{% endif %}
+{% else %}
+            $this->get{{ entity }}Handler()->delete{{ entity }}(${{ entity|lowerfirst }});
+{% endif %}
 
-            return new Response('', Codes::HTTP_NO_CONTENT);
+            return $this->handleView($this->view(null, Codes::HTTP_NO_CONTENT));
         } catch (\Exception $exception) {
-            throw new \RuntimeException("Deletion not allowed");
+            throw $this->createException(sprintf("Error deleting resource '%s'", $id));
         }
 {% endblock method_body %}
-{% block method_return '' %}
     }

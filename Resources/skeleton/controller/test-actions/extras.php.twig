@@ -6,10 +6,7 @@
     protected function getFixtures()
     {
         return [
-{% for fixture in fixtures %}
-            '{{ fixture }}'{% if not loop.last %},{% endif %}
-
-{% endfor %}
+            //Will implement later.
         ];
     }
 
@@ -18,7 +15,7 @@
      */
     protected function getPrivateFields()
     {
-        return [
+        return [z
 {% for private_field in private_fields %}
             '{{ private_field }}'{% if not loop.last %},{% endif %}
 

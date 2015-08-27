@@ -31,28 +31,36 @@
 {% endblock phpdoc_method_annotations %}
      */
 {% block method_definition %}
+{% if 'annotation' == format %}
     public function postAction(Request $request)
+{% else %}
+    public function post{{ entity }}Action(Request $request)
+{% endif %}
 {% endblock method_definition %}
     {
 {% block method_body %}
         try {
-            ${{ entity|lower }} = $this->get{{ entity }}Handler()
-                ->post($this->getPostData($request));
-
-            $response = new Response();
-            $response->setStatusCode(Codes::HTTP_CREATED);
-            $response->headers->set(
-                'Location',
-                $this->generateUrl(
-                    'get_{{ entity|lower|pluralize }}',
-                    ['{{ entity_identifier }}' => ${{ entity|lower }}->get{{ entity_identifier|capitalize }}()],
-                    true
+            return $this->handleView(
+                $this->view(
+                    $this->get{{ entity }}Handler()->post($this->getPayload($request)),
+                    null,
+                    [
+                        'Location' => $this->generateUrl(
+                            'get_{{ entity|lower|pluralize }}',
+                            ['{{ entity_identifier }}' => ${{ entity|lower }}->get{{ entity_identifier|capitalize }}()],
+                            true
+                        )
+                    ]
                 )
             );
-
-            return $response;
         } catch (InvalidFormException $exception) {
-            return $exception->getForm();
+            return $this->handleView(
+                $this->view(
+                    $exception->getErrors(),
+                    $exception->getStatusCode(),
+                    $exception->getHeaders()
+                )
+            );
         }
 {% endblock method_body %}
     }

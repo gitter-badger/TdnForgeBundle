@@ -1,22 +1,22 @@
 <?php
 
-namespace Tdn\PilotBundle\Command;
+namespace Tdn\ForgeBundle\Command;
 
-use Tdn\PilotBundle\Manipulator\FormManipulator;
+use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
 
 /**
  * Class GenerateFormCommand
  *
  * Generates a form type class for a given Doctrine entity, with optional REST generator support.
  *
- * @package Tdn\PilotBundle\Command
+ * @package Tdn\ForgeBundle\Command
  */
 class GenerateFormCommand extends AbstractGeneratorCommand
 {
     /**
      * @var string
      */
-    const NAME = 'tdn:generate:form';
+    const NAME = 'forge:generate:form';
 
     /**
      * @var string
@@ -24,11 +24,11 @@ class GenerateFormCommand extends AbstractGeneratorCommand
     const DESCRIPTION = 'Generates a form type class based on a doctrine entity.';
 
     /**
-     * @return FormManipulator
+     * @return string
      */
-    protected function createManipulator()
+    protected function getType()
     {
-        return new FormManipulator();
+        return GeneratorFactoryInterface::TYPE_FORM_GENERATOR;
     }
 
     /**

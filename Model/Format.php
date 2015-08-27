@@ -1,10 +1,13 @@
 <?php
 
-namespace Tdn\PilotBundle\Model;
+namespace Tdn\ForgeBundle\Model;
 
 /**
  * Interface Format
- * @package Tdn\PilotBundle\Model
+ *
+ * This will be broken down into a factory of sorts.
+ *
+ * @package Tdn\ForgeBundle\Model
  */
 interface Format
 {
@@ -12,4 +15,6 @@ interface Format
     const YAML = 'yaml';
     const YML = 'yml';
     const ANNOTATION = 'annotation';
+
+    public function __toString();
 }

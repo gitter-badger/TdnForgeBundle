@@ -1,8 +1,7 @@
-site_name: TdnPilotBundle
+site_name: TdnForgeBundle
 docs_dir: Resources/doc
 site_dir: build/doc/
-repo_url: https://github.com/TheDevNetwork/TdnPilotBundle.git
-api_url: https://thedevnetwork.github.io/TdnPilotBundle/_static/api/index.html
+repo_url: https://github.com/TheDevNetwork/TdnForgeBundle.git
 use_directory_urls: true
 theme: readthedocs
 pages:

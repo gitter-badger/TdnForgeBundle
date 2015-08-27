@@ -1,16 +1,17 @@
 <?php
 
-namespace Tdn\PilotBundle\Tests\Template\Strategy;
+namespace Tdn\ForgeBundle\Tests\Template\Strategy;
 
+use Tdn\ForgeBundle\Template\PostProcessor\PostProcessorChain;
 use Symfony\Component\Filesystem\Filesystem;
-use Tdn\PilotBundle\Model\File;
-use Tdn\PilotBundle\Template\Strategy\TwigStrategy;
-use Tdn\PilotBundle\TdnPilotBundle;
+use Tdn\ForgeBundle\Model\File;
+use Tdn\ForgeBundle\Template\Strategy\TwigStrategy;
+use Tdn\ForgeBundle\TdnForgeBundle;
 use \Mockery;
 
 /**
  * Class TwigStrategyTest
- * @package Tdn\PilotBundle\Tests\Template\Strategy
+ * @package Tdn\ForgeBundle\Tests\Template\Strategy
  */
 class TwigStrategyTest extends \PHPUnit_Framework_TestCase
 {
@@ -24,6 +25,14 @@ class TwigStrategyTest extends \PHPUnit_Framework_TestCase
      */
     private $outDir;
 
+    protected function setUp()
+    {
+        $this->outDir       = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'tdn-forge';
+        $this->filesystem   = new Filesystem();
+        $this->filesystem->remove($this->outDir);
+        $this->filesystem->mkdir($this->outDir);
+    }
+
     public function testRender()
     {
         $this->assertEquals('hello world', $this->getRendered());
@@ -31,45 +40,37 @@ class TwigStrategyTest extends \PHPUnit_Framework_TestCase
 
     public function testRenderFile()
     {
-        $this->getOutputEngine()->renderFile($this->getFileMock());
+        $this->getTemplateStrategy()->renderFile($this->getFileMock());
         $this->assertTrue(file_exists($this->getFileMock()->getRealPath()));
-        $this->assertEquals('hello world', file_get_contents($this->getFileMock()->getRealPath()));
-    }
-
-    protected function setUp()
-    {
-        $this->outDir       = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'tdn-pilot';
-        $this->filesystem   = new Filesystem();
-        $this->filesystem->remove($this->outDir);
-        $this->filesystem->mkdir($this->outDir);
+        $actualFile = new File($this->getFileMock()->getRealPath());
+        $this->assertEquals('hello world', $actualFile->getContents());
     }
 
     /**
      * @return TwigStrategy
      */
-    protected function getOutputEngine()
+    protected function getTemplateStrategy()
     {
-        $outputEngine = new TwigStrategy();
-        $outputEngine->setSkeletonDirs($this->getSkeletonDirs());
+        $outputEngine = new TwigStrategy($this->getPostProcessorChain());
+        $outputEngine->addSkeletonDir($this->getSkeletonDir());
 
         return $outputEngine;
     }
 
     /**
-     * @return string[]
+     * @return string
      */
-    protected function getSkeletonDirs()
+    protected function getSkeletonDir()
     {
-        $bundleClass    = new \ReflectionClass(new TdnPilotBundle());
-        $skeletonDirs   = [];
-        $skeletonDirs[] = dirname($bundleClass->getFileName()) . '/Tests/Fixtures/skeleton';
+        $bundleClass    = new \ReflectionClass(new TdnForgeBundle());
+        $skeletonDir = dirname($bundleClass->getFileName()) . '/Tests/Fixtures/skeleton';
 
-        return $skeletonDirs;
+        return $skeletonDir;
     }
 
     protected function getRendered()
     {
-        return $this->getOutputEngine()->render('hello.txt.twig', [
+        return $this->getTemplateStrategy()->render('hello.txt.twig', [
             'hello_var' => 'hello world'
         ]);
     }
@@ -79,12 +80,13 @@ class TwigStrategyTest extends \PHPUnit_Framework_TestCase
      */
     protected function getFileMock()
     {
-        $file = Mockery::mock('\Tdn\PilotBundle\Model\File');
+        $file = Mockery::mock('\Tdn\ForgeBundle\Model\File');
         $file
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getFilteredContents'  => 'hello world',
+                    'getContent'   => 'hello world',
+                    'getContents'  => 'hello world',
                     'getFilename'  => 'hello',
                     'getPath'      => $this->getOutDir(),
                     'getExtension' => 'txt',
@@ -109,5 +111,16 @@ class TwigStrategyTest extends \PHPUnit_Framework_TestCase
     {
         $this->filesystem->remove($this->outDir);
         Mockery::close();
+    }
+
+
+    /**
+     * @return PostProcessorChain
+     */
+    private function getPostProcessorChain()
+    {
+        $postProcessorChain = new PostProcessorChain();
+
+        return $postProcessorChain;
     }
 }

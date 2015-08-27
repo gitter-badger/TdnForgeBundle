@@ -1,0 +1,56 @@
+<?php
+
+namespace {{ namespace }}\Exception;
+
+{% block use_statements %}
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Doctrine\Common\Collections\ArrayCollection;
+use Excalibur\AppBundle\Form\Violation\ArrayCollectionMapper;
+{% endblock use_statements %}
+
+/**
+ * Class InvalidFormException
+ * @package {{ namespace }}\Exception
+ */
+{% block class_definition %}
+class InvalidFormException extends BadRequestHttpException
+{% endblock class_definition %}
+{
+{% block class_parameters %}
+    /**
+     * @var FormInterface
+     */
+    protected $form;
+
+{% endblock class_parameters %}
+{% block class_body %}
+    /**
+     * @param string $message
+     * @param FormInterface $form
+     * @param \Exception|null $previous
+     * @param int $code
+     */
+    public function __construct($message, FormInterface $form, \Exception $previous = null, $code = 0)
+    {
+        $this->form = $form;
+        parent::__construct($message, $previous, $code);
+    }
+
+    /**
+     * @return FormInterface
+     */
+    public function getForm()
+    {
+        return $this->form;
+    }
+
+    /**
+     * @return array|ArrayCollection
+     */
+    public function getErrors()
+    {
+        return (new ArrayCollectionMapper())->getErrors($this->form);
+    }
+{% endblock class_body %}
+}

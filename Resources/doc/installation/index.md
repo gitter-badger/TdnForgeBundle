@@ -15,10 +15,10 @@ Please review the [extras] page for details.</sub>
 
 Composer install
 ----------------
-Require the "tdn/pilotbundle" package in composer.json
+Require the "tdn/forgebundle" package in composer.json
 
 ```bash
-$ composer require tdn/pilotbundle dev-master
+$ composer require tdn/forgebundle dev-master
 ```
 
 <sub>GitFlow + Semver for 1.0.0+, master will only contain stable tags</sub>
@@ -31,7 +31,7 @@ public function registerBundles()
 {
     $bundles = array(
         //...
-        new Tdn\PilotBundle\TdnPilotBundle(),
+        new Tdn\ForgeBundle\TdnForgeBundle(),
         //...
     );
 
@@ -44,14 +44,14 @@ Configure
 Enable the bundle's configuration in `app/config/config.yml`:
 ``` yaml
 # app/config/config.yml
-tdn_pilot: ~
+tdn_forge: ~
 ```
 
 Configuration
 -------------
 #### Full configuration
 ``` yaml
-tdn_pilot:
+tdn_forge:
     template:
         strategy: twig_template_strategy # Or create your own service implementing TemplateStrategyInterface
 ```

@@ -1,0 +1,7 @@
+parameters:
+    tdn_forge.doctrine.entity.helper.class: Tdn\ForgeBundle\Services\Doctrine\EntityHelper
+
+services:
+    tdn_forge.doctrine.entity.helper:
+        class: %tdn_forge.doctrine.entity.helper.class%
+        arguments: ['@doctrine']

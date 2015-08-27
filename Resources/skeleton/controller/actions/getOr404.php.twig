@@ -4,6 +4,9 @@
      * Get a entity or throw a exception
      *
      * @param $id
+     *
+     * @throws NotFoundHttpException When the resource is not found.
+     *
      * @return {{ entity }}Interface ${{ entity|lowerfirst }}
 {% endblock phpdoc_method_header %}
      */
@@ -12,11 +15,19 @@
 {% endblock method_definition %}
     {
 {% block method_body %}
-        ${{ entity|lowerfirst }} = $this->get{{ entity }}Handler()
-            ->find{{ entity }}By(['{{ entity_identifier }}' => $id]);
-        if (!${{ entity|lowerfirst }}) {
-            throw new NotFoundHttpException(sprintf('The resource \'%s\' was not found.', $id));
+{% if entity|length >= 17 %}
+        ${{ entity|lowerfirst }} =
+            $this->get{{ entity }}Handler()->find{{ entity }}By(['{{ entity_identifier }}' => $id])
+        ;
+
+        if (null === ${{ entity|lowerfirst }}) {
+            throw $this->createNotFoundException(sprintf("The resource '%s' was not found.", $id));
         }
+{% else %}
+        if (null === ${{ entity|lowerfirst }} = $this->get{{ entity }}Handler()->find{{ entity }}By(['{{ entity_identifier }}' => $id])) {
+            throw $this->createNotFoundException(sprintf("The resource '%s' was not found.", $id));
+        }
+{% endif %}
 
         return ${{ entity|lowerfirst }};
 {% endblock method_body %}

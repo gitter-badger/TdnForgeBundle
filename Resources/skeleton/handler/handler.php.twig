@@ -4,6 +4,9 @@ namespace {{ namespace }}\Handler;
 
 {% block use_statements %}
 use Symfony\Component\Form\FormFactoryInterface;
+{% if 'annotation' == format %}
+use JMS\DiExtraBundle\Annotation as DI;
+{% endif %}
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use {{ namespace }}\Exception\InvalidFormException;
 use {{ namespace }}\Form\Type\{{ entity }}Type;
@@ -13,6 +16,10 @@ use {{ namespace }}\Entity\{{ entity }}Interface;
 
 {% block doc_block %}
 /**
+{% if 'annotation' == format %}
+ * @DI\Service("{{ service_id }}")
+ *
+{% endif %}
  * Class {{ entity }}Handler
  * @package {{ namespace }}\Handler
  */

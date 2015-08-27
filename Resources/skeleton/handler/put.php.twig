@@ -5,10 +5,8 @@
      *
      * @return {{ entity }}Interface
      */
-    public function put(
-        {{ entity }}Interface ${{ entity|lowerfirst }},
-        array $parameters
-    ) {
+    public function put({{ entity }}Interface ${{ entity|lowerfirst }}, array $parameters)
+    {
 {% block method_body %}
         return $this->processForm(
             ${{ entity|lowerfirst }},

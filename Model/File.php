@@ -1,22 +1,24 @@
 <?php
 
-namespace Tdn\PilotBundle\Model;
+namespace Tdn\ForgeBundle\Model;
 
-use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Class File
- * @package Tdn\PilotBundle\Model
+ * @package Tdn\ForgeBundle\Model
  */
 class File extends SplFileInfo
 {
+    /**
+     * @var string
+     */
     private $fileLocation;
 
     /**
      * @var string
      */
-    private $filteredContents;
+    private $content;
 
     /**
      * @var bool
@@ -30,12 +32,14 @@ class File extends SplFileInfo
 
     /**
      * @param string $file
+     * @param string $content
      * @param null $relativePath
      * @param null $relativePathName
      */
-    public function __construct($file, $relativePath = null, $relativePathName = null)
+    public function __construct($file, $content = null, $relativePath = null, $relativePathName = null)
     {
         $this->fileLocation = $file;
+        $this->content = $content;
         $this->auxFile = false;
         $this->serviceFile = false;
 
@@ -43,23 +47,11 @@ class File extends SplFileInfo
     }
 
     /**
-     * @param string $filteredContents
-     *
-     * @return $this
-     */
-    public function setFilteredContents($filteredContents)
-    {
-        $this->filteredContents = $filteredContents;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
-    public function getFilteredContents()
+    public function getContent()
     {
-        return $this->filteredContents;
+        return $this->content;
     }
 
     /**
@@ -98,10 +90,26 @@ class File extends SplFileInfo
     }
 
     /**
+     * @return bool
+     */
+    public function isDirty()
+    {
+        try {
+            $currentContents = parent::getContents();
+        } catch (\RuntimeException $e) {
+            $currentContents = '';
+        }
+
+        return ($this->getContent() != $currentContents);
+    }
+
+    /**
+     * Let's override since parent returns false if the file does not exist.
+     *
      * @return string
      */
     public function getRealPath()
     {
-        return (parent::getRealPath()) ?: $this->fileLocation;
+        return (parent::getRealPath()) ? parent::getRealPath() : $this->fileLocation;
     }
 }

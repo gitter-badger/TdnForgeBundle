@@ -2,7 +2,7 @@ Directory Structure
 -------------------
 Bundles following the [symfony2 best practices] should already meet the expectations here.
 
-The following namespace structure is expected for bundles:
+The following namespace structure is expected for bundles and it is how code will be generated:
 
 - Controllers: `<BundleNamespace>\Controllers`
 - Form Types: `<BundleNamespace>\Form\Type`
@@ -19,8 +19,8 @@ Entity Gotchas
 To guarantee that this bundle will work, entities must follow these basic guidelines:
 
 - Proper setters/getters
-- Proper docblock
-- Proper annotations (orm, odm, symfony constraints, etc)
+- Proper docblock documentation with types / return values, etc.
+- Proper/Relevant annotations or configuration files (orm, odm, symfony constraints, etc)
 
 Type rules:
 
@@ -46,11 +46,10 @@ If your object has service dependencies, it SHOULD be declared as a service (you
  object into an entity and a service object or business object).*
 The entity service name SHOULD follow this convention: `<bundle-name>.entity.<entity-name>` *
 
-`*` Note: This is not currently needed but will be in the next versions of the bundle.
+`*` Note: This is does not currently affect the bundle but ensures future compatibility.
 
-#### slug
-
-It is recommended that if using slugs for 
+Example Entity
+--------------
 
 Most basic example below:
 ``` php
