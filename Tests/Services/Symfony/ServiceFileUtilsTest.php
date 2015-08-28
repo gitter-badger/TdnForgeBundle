@@ -10,19 +10,19 @@ use Tdn\ForgeBundle\Model\ServiceDefinition;
 use Tdn\ForgeBundle\Services\Symfony\ServiceManager;
 
 /**
- * Class ServiceFileUtilsTest
+ * Class serviceManagerTest
  * @package Tdn\ForgeBundle\Tests\Services\Symfony
  */
-class ServiceFileUtilsTest extends \PHPUnit_Framework_TestCase
+class ServiceManagerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var ServiceManager
      */
-    protected $serviceFileUtils;
+    protected $serviceManager;
 
     protected function setUp()
     {
-        $this->serviceFileUtils = new ServiceManager();
+        $this->serviceManager = new ServiceManager();
     }
 
     public function testSupportedExtensions()
@@ -36,16 +36,16 @@ class ServiceFileUtilsTest extends \PHPUnit_Framework_TestCase
     {
         $paramK = '%foo%';
         $paramV = 'my_value';
-        $this->serviceFileUtils->addParameter($paramK, $paramV);
-        $this->assertArrayHasKey($paramK, $this->serviceFileUtils->getParameters());
-        $this->assertContains($paramV, $this->serviceFileUtils->getParameters());
+        $this->serviceManager->addParameter($paramK, $paramV);
+        $this->assertArrayHasKey($paramK, $this->serviceManager->getParameters());
+        $this->assertContains($paramV, $this->serviceManager->getParameters());
     }
 
     public function testAddServiceDefinition()
     {
         $definition = $this->getServiceDefinition();
-        $this->serviceFileUtils->addServiceDefinition($definition);
-        $this->assertContains($definition, $this->serviceFileUtils->getServiceDefinitions());
+        $this->serviceManager->addServiceDefinition($definition);
+        $this->assertContains($definition, $this->serviceManager->getServiceDefinitions());
     }
 
     /**
@@ -57,14 +57,14 @@ class ServiceFileUtilsTest extends \PHPUnit_Framework_TestCase
     public function testDump($format, $fileName)
     {
         $file = new File(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $fileName);
-        $this->serviceFileUtils->addParameter(
+        $this->serviceManager->addParameter(
             'foo_bar.manager.foo_manager.class',
             'Foo\BarBundle\Entity\Manager\FooManager'
         );
 
 
-        $this->serviceFileUtils->addServiceDefinition($this->getServiceDefinition());
-        $this->assertEquals($format, $this->serviceFileUtils->dump($file));
+        $this->serviceManager->addServiceDefinition($this->getServiceDefinition());
+        $this->assertEquals($format, $this->serviceManager->dump($file));
     }
 
     /**
