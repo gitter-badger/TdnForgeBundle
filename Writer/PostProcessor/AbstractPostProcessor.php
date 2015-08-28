@@ -1,11 +1,11 @@
 <?php
 
-namespace Tdn\ForgeBundle\Template\PostProcessor;
+namespace Tdn\ForgeBundle\Writer\PostProcessor;
 
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Finder\Finder;
 use Tdn\ForgeBundle\Exception\DirectoryNotFoundException;
-use Symfony\Component\Finder\SplFileInfo;
+use \SplFileInfo;
 
 abstract class AbstractPostProcessor implements PostProcessorInterface
 {
@@ -51,34 +51,43 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
      */
     private function findBinDir()
     {
-        if (basename($this->kernelRootDir->getRealPath()) == 'bin') {
+        if ($this->kernelRootDir->getBasename() == 'bin') {
             return $this->kernelRootDir->getRealPath();
         }
 
+        $searchIn = realpath($this->kernelRootDir->getRealPath() . DIRECTORY_SEPARATOR . '..');
+
         $binDir = $this->finder
             ->directories()
-            ->name('bin')
-            ->depth(2)
-            ->in([$this->kernelRootDir->getBasename() . DIRECTORY_SEPARATOR . '..'])
+            ->name("bin")
+            ->depth("< 2")
+            ->in($searchIn)
         ;
 
-        if ($binDir->count() > 1) {
+        $binDirs = iterator_to_array($binDir);
+
+        if (count($binDirs) > 1) {
             throw new DirectoryNotFoundException(
                 sprintf(
                     "Found multiple bin directories: %s%s",
                     PHP_EOL,
-                    implode(PHP_EOL . '-' . iterator_to_array($binDir))
+                    implode(PHP_EOL . '- ', $binDirs)
                 )
             );
         }
 
-        if ($binDir->count() < 1) {
-            throw new FileNotFoundException("Bin directory could not be found.");
+        if (count($binDir) < 1) {
+            throw new DirectoryNotFoundException(
+                sprintf(
+                    "Bin directory could not be found in %s.",
+                    $searchIn
+                )
+            );
         }
 
-        $binDir = iterator_to_array($binDir)[0];
-
         /** @var SplFileInfo $binDir */
+        $binDir = array_pop($binDirs);
+
         return $binDir->getRealPath();
     }
 

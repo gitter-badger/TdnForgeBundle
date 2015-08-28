@@ -2,7 +2,6 @@
 
 namespace Tdn\ForgeBundle\Traits;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Model\File;
 
@@ -18,21 +17,9 @@ trait FileDependencies
     private $fileDependencies;
 
     /**
-     * @param Collection $fileDependencies
-     */
-    public function setFileDependencies(Collection $fileDependencies)
-    {
-        $this->fileDependencies = new ArrayCollection();
-
-        foreach ($fileDependencies as $fileDependency) {
-            $this->addFileDependency($fileDependency);
-        }
-    }
-
-    /**
      * @param File $fileDependency
      */
-    public function addFileDependency(File $fileDependency)
+    protected function addFileDependency(File $fileDependency)
     {
         if (!$this->fileDependencies->contains($fileDependency)) {
             $this->fileDependencies->add($fileDependency);
@@ -42,7 +29,7 @@ trait FileDependencies
     /**
      * @return ArrayCollection|File[]
      */
-    public function getFileDependencies()
+    protected function getFileDependencies()
     {
         return $this->fileDependencies;
     }

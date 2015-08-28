@@ -15,11 +15,10 @@ trait TemplateStrategy
      */
     private $templateStrategy;
 
-
     /**
      * @param ITemplateStrategy $templateStrategy
      */
-    public function setTemplateStrategy(ITemplateStrategy $templateStrategy)
+    protected function setTemplateStrategy(ITemplateStrategy $templateStrategy)
     {
         $this->templateStrategy = $templateStrategy;
     }

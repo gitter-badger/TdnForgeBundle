@@ -11,7 +11,13 @@ use Tdn\ForgeBundle\Model\File;
  */
 class FileTest extends \PHPUnit_Framework_TestCase
 {
-    const FILE_CONTENTS = 'Esto es una prueba ;)';
+    const FILE_QUEUE = 'Esto es una prueba ;)';
+
+    /**
+     * @var string
+     */
+    private $fileName;
+
     /**
      * @var File
      */
@@ -19,10 +25,8 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->file = new File(
-            sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('file') . '.php',
-            self::FILE_CONTENTS
-        );
+        $this->fileName = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('file') . '.php';
+        $this->file = new File($this->fileName, self::FILE_QUEUE);
 
         touch($this->file->getRealPath());
     }
@@ -34,46 +38,41 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->file instanceof File);
     }
 
-    public function testContents()
+    public function testDefaults()
     {
-        $this->file->openFile('w')->fwrite('test');
-        $this->assertEquals('test', $this->file->getContents());
-        $this->assertTrue($this->file->isFile());
+        $this->assertEmpty($this->file->getContents());
+        $this->assertEquals(self::FILE_QUEUE, $this->file->getQueue());
+        $this->assertEquals(File::QUEUE_DEFAULT, $this->file->getQueueType());
+        $this->assertEquals($this->fileName, $this->file->getRealPath());
     }
 
-    public function testContent()
+    public function testAllowedTypes()
     {
-        $this->assertEquals(self::FILE_CONTENTS, $this->file->getContent());
+        $this->assertContains(File::QUEUE_DEFAULT, File::getSupportedQueueTypes());
+        $this->assertContains(File::QUEUE_IF_UPGRADE, File::getSupportedQueueTypes());
+        $this->assertContains(File::QUEUE_ALWAYS, File::getSupportedQueueTypes());
     }
 
-    public function testAuxFile()
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Invalid write type for file.
+     */
+    public function testInvalidType()
     {
-        $this->assertFalse($this->file->isAuxFile());
-        $this->file->setAuxFile(true);
-        $this->assertTrue($this->file->isAuxFile());
-    }
-
-    public function testServiceFile()
-    {
-        $this->assertFalse($this->file->isServiceFile());
-        $this->file->setServiceFile(true);
-        $this->assertTrue($this->file->isServiceFile());
+        new File('foo', '', '');
     }
 
     public function testIsDirty()
     {
         $this->assertTrue($this->file->isDirty());
-        $this->file->openFile('w')->fwrite(self::FILE_CONTENTS);
+        $this->file->openFile('w')->fwrite(self::FILE_QUEUE);
         $this->assertFalse($this->file->isDirty());
     }
-
 
     protected function tearDown()
     {
         if ($this->file->isFile()) {
             unlink($this->file->getRealPath());
         }
-
-        $this->file = null;
     }
 }

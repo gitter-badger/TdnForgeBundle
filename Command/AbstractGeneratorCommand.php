@@ -2,15 +2,12 @@
 
 namespace Tdn\ForgeBundle\Command;
 
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Sensio\Bundle\GeneratorBundle\Command\Validators;
 use Doctrine\Common\Collections\ArrayCollection;
-use Tdn\ForgeBundle\Generator\Factory\StandardGeneratorFactory;
-use Tdn\ForgeBundle\Generator\GeneratorInterface;
 use Tdn\ForgeBundle\Model\Format;
 use Tdn\ForgeBundle\Model\File;
 
@@ -18,7 +15,7 @@ use Tdn\ForgeBundle\Model\File;
  * Class AbstractCommand
  * @package Tdn\ForgeBundle\Command
  */
-abstract class AbstractGeneratorCommand extends AbstractCommand implements GeneratorCommandInterface
+abstract class AbstractGeneratorCommand extends AbstractCommand
 {
     /**
      * Override in child class
@@ -40,17 +37,12 @@ abstract class AbstractGeneratorCommand extends AbstractCommand implements Gener
     /**
      * @var array
      */
-    private $options = [];
+    private $generatorOptions = [];
 
     /**
-     * @var GeneratorInterface
+     * @var ArrayCollection|File[]
      */
-    private $generator;
-
-    /**
-     * @return string[]
-     */
-    abstract protected function getFiles();
+    private $files;
 
     /**
      * @return string
@@ -58,35 +50,31 @@ abstract class AbstractGeneratorCommand extends AbstractCommand implements Gener
     abstract protected function getType();
 
     /**
-     * @param array $options
+     * @param array $generatorOptions
      */
-    public function setOptions(array $options)
+    protected function setGeneratorOptions(array $generatorOptions)
     {
-        $this->options = $options;
+        $this->generatorOptions = $generatorOptions;
     }
 
     /**
      * @return array
      */
-    public function getOptions()
+    protected function getGeneratorOptions()
     {
-        return $this->options;
+        return $this->generatorOptions;
     }
 
     /**
-     * @param GeneratorInterface $generator
+     * @return ArrayCollection|File[]
      */
-    public function setGenerator(GeneratorInterface $generator)
+    protected function getFiles()
     {
-        $this->generator = $generator;
-    }
+        if (null === $this->files) {
+            $this->files = new ArrayCollection();
+        }
 
-    /**
-     * @return GeneratorInterface
-     */
-    public function getGenerator()
-    {
-        return $this->generator;
+        return $this->files;
     }
 
     /**
@@ -117,7 +105,8 @@ abstract class AbstractGeneratorCommand extends AbstractCommand implements Gener
                 'overwrite',
                 null,
                 InputOption::VALUE_NONE,
-                'Overwrite existing ' . implode(',', $this->getFiles())
+                'Overwrite existing files ' .
+                '[Warning: any modifications done to previously generated files will be discarded].'
             )
             ->addOption(
                 'target-directory',
@@ -155,103 +144,119 @@ abstract class AbstractGeneratorCommand extends AbstractCommand implements Gener
             ->setDescription(static::DESCRIPTION)
             ->setName(static::NAME)
         ;
+
+        parent::configure();
     }
 
     /**
-     * Generates the files based on the options provided.
-     *
-     * Sets up all dependencies for generator, prepares it
-     * and ultimately tells it to generate it's files.
-     *
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return integer
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output)
     {
-        if (true !== $error = $this->isInputValid($input)) {
-            $output->writeln("<error>$error</error>");
-
-            return 1;
+        if (($input->getOption('entity') === null && $input->getOption('entities-location') === null) ||
+            ($input->getOption('entity') !== null && $input->getOption('entities-location') !== null)
+        ) {
+            //We have to target something....will implement ask questions later.
+            throw new \InvalidArgumentException(
+                'Please ensure either option "entity" or "entities-location" have a proper value'
+            );
         }
 
-        $entities = $this->resolveEntities($input, $output);
+        if ($input->getOption('entities-location') !== null && $input->getOption('bundle-name') === null) {
+            //We have to know the bundle name...will implement ask questions later.
+            throw new \InvalidArgumentException(
+                'Please ensure the bundle name is passed in when using entities location.'
+            );
+        }
+
+        parent::interact($input, $output);
+    }
+
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        $entities = $this->resolveEntities($input);
         $overWrite = $input->getOption('overwrite') ? true : false;
         $targetDirectory = $input->hasOption('target-directory') ? $input->getOption('target-directory') : null;
         $format = $input->getOption('format');
         $format = ($format == Format::YML) ? Format::YAML : $format; //normalize.
+        $this->files = new ArrayCollection();
 
         foreach ($entities as $entity) {
-            list($bundleName, $entity) = $this->parseShortcutNotation($entity);
-            $bundle  = $this->getKernel()->getBundle($bundleName);
+            list($bundle, $entity) = $this->parseShortcutNotation($entity);
 
-            if (null == $generator = $this->getGenerator()) {
-                $generator = $this->getGeneratorFactory()->create(
-                    $this->getType(),
-                    $this->getEntityHelper()->getMetadata($bundle, $entity),
-                    $bundle,
-                    $format,
-                    $targetDirectory,
-                    $overWrite,
-                    $this->getOptions()
-                );
+            $generator = $this->getGeneratorFactory()->create(
+                $this->getType(),
+                $this->getEntityHelper()->getMetadata($bundle, $entity),
+                $bundle,
+                $format,
+                $targetDirectory,
+                $overWrite,
+                $this->getGeneratorOptions()
+            );
+
+            $files = $generator->generate();
+            foreach ($files as $file) {
+                $this->files->add($file);
             }
 
-            if ($this->shouldContinue($input, $output, $generator->getFiles(), $entity)) {
-                $output->write(PHP_EOL);
-                $output->writeln("<info>Generating files...this could take a while.</info>");
-                foreach ($generator->generate() as $file) {
-                    $this->printFileGeneratedMessage($output, $file);
-                }
-                $output->write(PHP_EOL);
-                foreach ($generator->getMessages() as $message) {
-                    $output->writeln(
-                        sprintf(
-                            '<comment>%s</comment>',
-                            $message
-                        )
-                    );
-                }
-                $output->write(PHP_EOL);
-            } else {
-                $output->writeln('<notice>Generation cancelled.</notice>');
+            $generator->getMessages()->forAll(function ($message) use ($output) {
+                $output->writeln("<info>$message</info>");
+            });
+        }
 
-                return 1;
+        parent::initialize($input, $output);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return integer
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $files = $this->getFiles();
+        if ($this->shouldContinue($input, $output, $files)) {
+            $output->writeln("<info>Generating files...this could take a while.</info>");
+            foreach ($files as $file) {
+                $this->getWriterStrategy()->writeFile($file);
+                $output->writeln(sprintf(
+                    'The new <info>%s</info> file has been created under <info>%s</info>.',
+                    $file->getFilename(),
+                    $file->getRealPath()
+                ));
             }
+        } else {
+            $output->writeln('<notice>Generation cancelled.</notice>');
+
+            return 1;
         }
 
         return 0;
     }
 
     /**
-     * Confirms generation
+     * Confirms disk write.
      *
-     * If input is interactive asks to confirm generation of files. You have to explicitly
-     * confirm to continue.
-     * If input is **not** interactive, then it will automatically return true.
+     * If input is interactive asks to confirm writing files to disk.
      *
      * @param InputInterface  $input
      * @param OutputInterface $output
-     * @param ArrayCollection $generatedFiles
-     * @param string          $entity
+     * @param ArrayCollection $files
      *
      * @return bool
      */
-    protected function shouldContinue(
-        InputInterface $input,
-        OutputInterface $output,
-        ArrayCollection $generatedFiles,
-        $entity
-    ) {
+    protected function shouldContinue(InputInterface $input, OutputInterface $output, ArrayCollection $files)
+    {
         if ($input->isInteractive()) {
             $question = new ConfirmationQuestion(
                 sprintf(
-                    'Entity %s - File(s) to be modified:' .
+                    'File(s) to be modified/generated:' .
                     PHP_EOL . '<info>%s</info>' .
-                    PHP_EOL . 'Do you confirm generation/manipulation of the files listed above (y/n)?',
-                    $entity,
-                    implode(PHP_EOL, $generatedFiles->map(function (File $generatedFile) {
-                        return '- ' . $generatedFile->getRealPath();
+                    PHP_EOL . 'Do you confirm generation/modification of the files listed above (y/n)?',
+                    implode(PHP_EOL, $files->map(function (File $file) {
+                        return '- ' . $file->getRealPath();
                     })->toArray())
                 ),
                 false
@@ -264,71 +269,35 @@ abstract class AbstractGeneratorCommand extends AbstractCommand implements Gener
     }
 
     /**
-     * @return KernelInterface
-     */
-    protected function getKernel()
-    {
-        return $this->getContainer()->get('kernel');
-    }
-
-    /**
-     * @return StandardGeneratorFactory
-     */
-    protected function getGeneratorFactory()
-    {
-        return $this->getContainer()->get('tdn_forge.generator.factory.standard_generator_factory');
-    }
-
-    /**
-     * @param InputInterface $input
-     *
-     * @return mixed Returns true if valid, string containing error if not.
-     */
-    protected function isInputValid(InputInterface $input)
-    {
-        if (($input->getOption('entity') === null && $input->getOption('entities-location') === null) ||
-            ($input->getOption('entity') !== null && $input->getOption('entities-location') !== null)
-        ) {
-            return 'Please use either entity OR entities-location. One is required.';
-        }
-
-        if ($input->getOption('entities-location') !== null && $input->getOption('bundle-name') === null) {
-            return 'Bundle Name parameter is required when loading many entities.';
-        }
-
-        return true;
-    }
-
-    /**
      * Returns an array containing the bundle and the entity.
      *
      * @param string $shortcut
      *
-     * @return string[]
+     * @return array containing two elements [0] => BundleInterface, [1] => (string) Entity
      */
-    protected function parseShortcutNotation($shortcut)
+    private function parseShortcutNotation($shortcut)
     {
         $entity = str_replace('/', '\\', $shortcut);
 
         if (false === $pos = strpos($entity, ':')) {
             throw new \InvalidArgumentException(
                 sprintf(
-                    'The entity name must contain a : ("%s" given, expecting something like AcmeBlogBundle:Blog/Post)',
+                    'The entity name must contain a ":".' .
+                    ' "%s" given, expecting something like "AcmeBlogBundle:Blog/Post"',
                     $entity
                 )
             );
         }
 
-        return array(substr($entity, 0, $pos), substr($entity, $pos + 1));
+        return array($this->getKernel()->getBundle(substr($entity, 0, $pos)), substr($entity, $pos + 1));
     }
 
     /**
      * @param InputInterface $input
-     * @param OutputInterface $output
      *
      * @return ArrayCollection|string
      */
-    private function resolveEntities(InputInterface $input, OutputInterface $output)
+    private function resolveEntities(InputInterface $input)
     {
         $entities = (null === $input->getOption('entities-location')) ?
             new ArrayCollection() :
@@ -343,14 +312,6 @@ abstract class AbstractGeneratorCommand extends AbstractCommand implements Gener
             $entity = Validators::validateEntityName($entity);
             $entities->add($entity);
         }
-
-        $output->writeln(
-            sprintf(
-                'Generating files for %s entit%s... (You can skip interaction by passing in the --no-interaction flag)',
-                $entities->count(),
-                $entities->count() > 1 ? 'ies' : 'y'
-            )
-        );
 
         return $entities;
     }

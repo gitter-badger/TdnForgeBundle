@@ -4,6 +4,7 @@ namespace Tdn\ForgeBundle\Generator;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Tdn\ForgeBundle\Generator\Plugin\Controller\TestPlugin;
 use Tdn\PhpTypes\Type\String;
 use Tdn\ForgeBundle\Model\File;
 
@@ -13,11 +14,6 @@ use Tdn\ForgeBundle\Model\File;
  */
 class ControllerGenerator extends AbstractGenerator
 {
-    /**
-     * @var string
-     */
-    private $prefix;
-
     /**
      * @var bool
      */
@@ -29,30 +25,35 @@ class ControllerGenerator extends AbstractGenerator
     private $tests;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $fixtures;
+    private $prefix;
 
     /**
-     * @param string $prefix
+     * @var string
      */
-    public function setPrefix($prefix)
-    {
-        $this->prefix = $prefix;
-    }
+    private $fixturesPath;
 
     /**
-     * @return string
+     * Sets up a controller based on an entity.
+     * Sets up controller test files if flag is set.
+     *
+     * @return $this
      */
-    public function getPrefix()
+    protected function configure()
     {
-        return ($this->prefix) ? $this->prefix : '';
+        $this->addHandlerDependency();
+        $this->addController();
+        if ($this->supportsTests()) {
+        }
+
+        parent::configure();
     }
 
     /**
      * @param bool $swagger
      */
-    public function setSwagger($swagger)
+    protected function setSwagger($swagger)
     {
         $this->swagger = $swagger;
     }
@@ -68,7 +69,7 @@ class ControllerGenerator extends AbstractGenerator
     /**
      * @param bool $tests
      */
-    public function setTests($tests)
+    protected function setTests($tests)
     {
         $this->tests = $tests;
     }
@@ -82,32 +83,35 @@ class ControllerGenerator extends AbstractGenerator
     }
 
     /**
-     * @param bool $fixtures
+     * @param string $prefix
      */
-    public function setFixtures($fixtures)
+    protected function setPrefix($prefix)
     {
-        $this->fixtures = $fixtures;
+        $this->prefix = $prefix;
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function supportsFixtures()
+    public function getPrefix()
     {
-        return $this->fixtures;
+        return ($this->prefix) ? $this->prefix : '';
     }
 
     /**
-     * Sets up a controller based on an entity.
-     * Sets up controller test files if flag is set.
-     * @return $this
+     * @param string $fixturesPath
      */
-    public function configure()
+    protected function setFixturesPath($fixturesPath)
     {
-        $this->addHandlerDependency();
-        $this->addController();
+        $this->fixturesPath = $fixturesPath;
+    }
 
-        return $this;
+    /**
+     * @return string
+     */
+    public function getFixturesPath()
+    {
+        return $this->fixturesPath;
     }
 
     /**
@@ -117,23 +121,23 @@ class ControllerGenerator extends AbstractGenerator
     {
         $resolver->setDefaults([
             'prefix' => '',
+            'fixtures-path' => '',
             'swagger' => false,
-            'tests' => false,
-            'fixtures' => false
+            'tests' => false
         ]);
 
         $resolver
-            //Route Prefix
+            ->setDefined('prefix')
             ->setAllowedTypes('prefix', 'string')
-            //Swagger
-            ->setRequired('swagger')
+
+            ->setDefined('fixtures-path')
+            ->setAllowedTypes('fixtures-path', 'string')
+
+            ->setDefined('swagger')
             ->setAllowedTypes('swagger', 'bool')
-            //Tests
-            ->setRequired('tests')
+
+            ->setDefined('tests')
             ->setAllowedTypes('tests', 'bool')
-            //Fixtures
-            ->setRequired('fixtures')
-            ->setAllowedTypes('fixtures', 'bool')
         ;
     }
 
@@ -146,10 +150,13 @@ class ControllerGenerator extends AbstractGenerator
     protected function resolveOptions(OptionsResolver $resolver, array $options)
     {
         $options = $resolver->resolve($options);
-        $this->setPrefix($options['prefix']);
         $this->setSwagger($options['swagger']);
         $this->setTests($options['tests']);
-        $this->setFixtures($options['fixtures']);
+        $this->setPrefix($options['prefix']);
+
+        if ($this->supportsTests()) {
+            $this->setFixturesPath($options['fixtures-path']);
+        }
 
         return $options;
     }
@@ -176,14 +183,12 @@ class ControllerGenerator extends AbstractGenerator
      */
     protected function getControllerContent()
     {
-        $idType = $this->getIdentifierType($this->getMetadata());
-
         return $this->getTemplateStrategy()->render(
             'controller/controller.php.twig',
             [
-                'entity_identifier_type' => $idType,
+                'entity_identifier_type' => $this->getIdentifierType(),
                 'entity_identifier'      => $this->getEntityIdentifier(),
-                'requirement_regex'      => $this->getRequirementRegex($idType),
+                'requirement_regex'      => $this->getRequirementRegex($this->getIdentifierType()),
                 'route_prefix'           => $this->getPrefix(),
                 'bundle'                 => $this->getBundle()->getName(),
                 'entity'                 => $this->getEntity(),
@@ -201,20 +206,13 @@ class ControllerGenerator extends AbstractGenerator
     }
 
     /**
-     * @param ClassMetadata $metadata
-     * @throws \InvalidArgumentException
      * @return string
      */
-    protected function getIdentifierType(ClassMetadata $metadata)
+    protected function getIdentifierType()
     {
-        if (count($metadata->identifier) !== 1) {
-            throw new \InvalidArgumentException(
-                'This bundle is incompatible with entities that contain more than one identifier or no identifier.'
-            );
-        }
+        $identifier = array_values($this->getMetadata()->identifier)[0];
 
-        $identifier = array_values($metadata->identifier)[0];
-        foreach ($metadata->fieldMappings as $field) {
+        foreach ($this->getMetadata()->fieldMappings as $field) {
             if ($field['fieldName'] == $identifier) {
                 return $field['type'];
             }

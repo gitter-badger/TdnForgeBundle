@@ -1,16 +1,16 @@
 <?php
 
-namespace Tdn\ForgeBundle\Template\PostProcessor;
+namespace Tdn\ForgeBundle\Writer\PostProcessor;
 
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Finder\SplFileInfo;
+use \SplFileInfo;
 use Tdn\PhpTypes\Type\String;
 
 /**
  * Class PsrPostProcessor
- * @package Tdn\ForgeBundle\Template\PostProcessor
+ * @package Tdn\ForgeBundle\Writer\PostProcessor
  */
 class PsrPostProcessor extends AbstractPostProcessor implements PostProcessorInterface
 {
@@ -58,7 +58,6 @@ class PsrPostProcessor extends AbstractPostProcessor implements PostProcessorInt
     }
 
     /**
-     * @throws \RuntimeException when dependencies are not met.
      * @return bool
      */
     public function isValid()

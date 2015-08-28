@@ -11,22 +11,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 interface DoctrineMetadataInterface
 {
     /**
-     * @param ClassMetadata $metadata
-     */
-    public function setMetadata(ClassMetadata $metadata);
-
-    /**
      * @return ClassMetadata
      */
     public function getMetadata();
-
-    /**
-     * @return string
-     */
-    public function getEntity();
-
-    /**
-     * @return string
-     */
-    public function getEntityNamespace();
 }

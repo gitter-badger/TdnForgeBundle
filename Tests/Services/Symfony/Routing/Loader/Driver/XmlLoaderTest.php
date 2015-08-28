@@ -30,4 +30,30 @@ class XmlLoaderTest extends AbstractRoutingTest
         $loader = new XmlLoader(new FileLocator($xmlResource->getPath()));
         $this->assertEquals($this->getRouteCollection(), $loader->load($xmlResource->getBasename()));
     }
+
+    /**
+     * @expectedException \Tdn\ForgeBundle\Exception\InvalidXmlException
+     * @expectedExceptionMessageRegExp /Error\(s\) parsing file: (.*)./
+     */
+    public function testNoLoad()
+    {
+        $xmlResource = new File(
+            realpath(
+                __DIR__
+                . DIRECTORY_SEPARATOR . '..'
+                . DIRECTORY_SEPARATOR . '..'
+                . DIRECTORY_SEPARATOR . '..'
+                . DIRECTORY_SEPARATOR . '..'
+                . DIRECTORY_SEPARATOR . '..'
+                . DIRECTORY_SEPARATOR . 'Fixtures'
+                . DIRECTORY_SEPARATOR . 'static'
+                . DIRECTORY_SEPARATOR . 'routing'
+            )
+            . DIRECTORY_SEPARATOR
+            . 'bad-routing.xml'
+        );
+
+        $loader = new XmlLoader(new FileLocator($xmlResource->getPath()));
+        $loader->load($xmlResource->getBasename());
+    }
 }

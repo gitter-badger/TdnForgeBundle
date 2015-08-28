@@ -30,12 +30,4 @@ class GenerateFormCommand extends AbstractGeneratorCommand
     {
         return GeneratorFactoryInterface::TYPE_FORM_GENERATOR;
     }
-
-    /**
-     * @return string[]
-     */
-    protected function getFiles()
-    {
-        return ['Form type'];
-    }
 }

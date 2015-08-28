@@ -2,11 +2,10 @@
 
 namespace Tdn\ForgeBundle\Tests\Generator;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Generator\RoutingGenerator;
 use Tdn\ForgeBundle\Model\File;
-use \Mockery;
 use Tdn\ForgeBundle\Model\Format;
+use \Mockery;
 
 /**
  * Class RoutingGeneratorTest
@@ -14,20 +13,22 @@ use Tdn\ForgeBundle\Model\Format;
  */
 class RoutingGeneratorTest extends AbstractGeneratorTest
 {
-    public function testRoutingFile()
-    {
-        $generator = $this->getGenerator();
-        $this->assertEquals($this->getDefaultOptions()['routing-file'], $generator->getRoutingFile());
-        $generator->setRoutingFile('test.yaml');
-        $this->assertEquals('test.yaml', $generator->getRoutingFile());
-    }
 
-    public function testRoutePrefix()
+    /**
+     * @expectedException \Tdn\ForgeBundle\Exception\CoreDependencyMissingException
+     * @expectedExceptionMessageRegExp /Please ensure the file (.*) exists and is readable./
+     */
+    public function testDependencyMissing()
     {
-        $generator = $this->getGenerator();
-        $this->assertEquals($this->getDefaultOptions()['prefix'], $generator->getPrefix());
-        $generator->setPrefix('api');
-        $this->assertEquals('api', $generator->getPrefix());
+        $generator = $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            false,
+            [],
+            false
+        );
+
+        $generator->generate();
     }
 
     public function optionsProvider()
@@ -35,77 +36,123 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
         return [
             [
                 Format::YAML,
+                self::getOutDir(),
                 true,
-                [$this->getYamlRoutingFileMock()->getRealPath() => $this->getYamlRoutingFileMock()],
-                $this->getDefaultOptions()
+                ['prefix' => 'api'],
+                [$this->getYamlRoutingFileMock()->getRealPath() => $this->getYamlRoutingFileMock()]
             ],
             [
                 Format::XML,
+                self::getOutDir(),
                 true,
-                [$this->getXmlRoutingFileMock()->getRealPath() => $this->getXmlRoutingFileMock()],
-                $this->getDefaultOptions()
+                ['prefix' => 'api'],
+                [$this->getXmlRoutingFileMock()->getRealPath() => $this->getXmlRoutingFileMock()]
             ],
             [
                 Format::ANNOTATION,
+                self::getOutDir(),
                 true,
-                [$this->getAnnotatedRoutingFileMock()->getRealPath() => $this->getAnnotatedRoutingFileMock()],
-                [
-                    'routing-file' => 'routing',
-                    'prefix' => ''
-                ]
-
+                [],
+                [$this->getAnnotatedRoutingFileMock()->getRealPath() => $this->getAnnotatedRoutingFileMock()]
             ]
         ];
     }
 
-    /**
-     * @param array $options
-     *
-     * @return RoutingGenerator
-     */
-    protected function getGenerator(array $options = [])
+    public function testDefaultOptions()
     {
-        $options = (!empty($options)) ? $options : $this->getDefaultOptions();
-        $generator = new RoutingGenerator(
-            $this->getMetadata(),
-            $this->getBundle(),
-            $this->getTemplateStrategy(),
+        $generator = $this->getGenerator();
+        $this->assertEmpty($generator->getPrefix());
+        $this->assertEquals(RoutingGenerator::DEFAULT_ROUTING_FILE, $generator->getRoutingFile());
+    }
+
+    public function testExplicitOptions()
+    {
+        $generator = $this->getGenerator(
             Format::YAML,
             self::getOutDir(),
-            false,
-            $options,
-            false, //not forge
-            true   //ignore optional deps checks.
+            true,
+            [
+                'prefix' => 'api',
+                'routing-file' => 'woot',
+            ]
         );
 
-        return $generator;
+        $this->assertEquals('api', $generator->getPrefix());
+        $this->assertEquals('woot', $generator->getRoutingFile());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException
+     */
+    public function testUndefinedOption()
+    {
+        $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            true,
+            ['non-existent' => true]
+        );
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
+     * @dataProvider badOptionsProvider
+     *
+     * @param array $badOptions
+     */
+    public function testBadOptionValues(array $badOptions)
+    {
+        $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            true,
+            $badOptions
+        );
     }
 
     /**
      * @return array
      */
-    protected function getDefaultOptions()
+    public function badOptionsProvider()
     {
         return [
-            'routing-file' => 'routing',
-            'prefix' => 'v1'
+            [['prefix' => null]],
+            [['prefix' => false]],
+            [['prefix' => 1]],
+            [['routing-file' => null]],
+            [['routing-file' => false]],
+            [['routing-file' => 1]]
         ];
     }
 
     /**
-     * @return ArrayCollection|File[]
+     * @param string $format
+     * @param string $targetDir
+     * @param bool $overwrite
+     * @param array $options
+     * @param bool $forceGeneration
+     *
+     * @return RoutingGenerator
      */
-    protected function getFileDependencies()
-    {
-        $controllerFile = sprintf(
-            '%s' . DIRECTORY_SEPARATOR . 'Controller' . DIRECTORY_SEPARATOR . '%sController.php',
-            $this->getOutDir(),
-            'Foo'
+    protected function getGenerator(
+        $format = Format::YAML,
+        $targetDir = null,
+        $overwrite = true,
+        array $options = [],
+        $forceGeneration = false
+    ) {
+        $generator = new RoutingGenerator(
+            $this->getMetadata(),
+            $this->getBundle(),
+            $this->getTemplateStrategy(),
+            $format,
+            $targetDir,
+            $overwrite,
+            $options,
+            $forceGeneration
         );
 
-        return new ArrayCollection([
-            new File($controllerFile, null, null)
-        ]);
+        return $generator;
     }
 
     /**
@@ -118,12 +165,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('routing', 'routing.yaml'),
-                    'getFilename'  => 'routing',
-                    'getExtension' => 'yaml',
-                    'isAuxFile'    => true,
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('routing', 'routing.yaml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routing.yaml'
                 ]
@@ -147,12 +189,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('routing', 'annotated.yaml'),
-                    'getFilename'  => 'routing',
-                    'getExtension' => 'yaml',
-                    'isAuxFile'    => true,
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('routing', 'annotated.yaml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routing.yaml'
                 ]
@@ -173,12 +210,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('routing', 'routing.xml'),
-                    'getFilename'  => 'routing',
-                    'getExtension' => 'xml',
-                    'isAuxFile'    => true,
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('routing', 'routing.xml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routing.xml'
                 ]

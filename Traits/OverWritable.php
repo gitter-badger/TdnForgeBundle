@@ -16,7 +16,7 @@ trait OverWritable
     /**
      * @param bool $overWrite
      */
-    public function setOverWrite($overWrite)
+    protected function setOverWrite($overWrite)
     {
         $this->overWrite = $overWrite;
     }

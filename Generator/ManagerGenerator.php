@@ -16,11 +16,12 @@ use Tdn\ForgeBundle\Model\ServiceDefinition;
 class ManagerGenerator extends AbstractServiceGenerator
 {
     /**
-     * Sets up an Entity Manager based on entity.
-     * Sets up an Entity Manager interface.
-     * @return $this
+     * Adds Abstract EntityManager (if not exists or if needs update)
+     * Adds Concrete EntityManager
+     * Adds EntityManager interface
+     * Adds service file
      */
-    public function configure()
+    protected function configure()
     {
         $entityReflection = $this->getMetadata()->getReflectionClass();
 
@@ -37,10 +38,10 @@ class ManagerGenerator extends AbstractServiceGenerator
         $this->addManagerInterfaceFile($path, $entityConstructor);
 
         if ($this->getFormat() !== Format::ANNOTATION) {
-            $this->addManagerServiceFile();
+            $this->addServiceFile('managers');
         }
 
-        return $this;
+        parent::configure();
     }
 
     /**
@@ -71,18 +72,11 @@ class ManagerGenerator extends AbstractServiceGenerator
                 '%s' . DIRECTORY_SEPARATOR . 'AbstractManager.php',
                 $path
             ),
-            $this->getAbstractManagerContent()
+            $this->getAbstractManagerContent(),
+            File::QUEUE_IF_UPGRADE
         );
 
-        //File created only once unless there's an upgrade.
-        if ((!$abstractManager->isFile() || $this->shouldOverWrite())
-            || ($abstractManager->isDirty())) {
-            if ($abstractManager->isDirty() && $abstractManager->isFile()) {
-                $this->addMessage("Abstract manager was upgraded.");
-            }
-
-            $this->addFile($abstractManager);
-        }
+        $this->addFile($abstractManager);
     }
 
     /**
@@ -97,39 +91,11 @@ class ManagerGenerator extends AbstractServiceGenerator
                 $path,
                 $this->getEntity()
             ),
-            $this->getManagerInterfaceContent($entityConstructor)
+            $this->getManagerInterfaceContent($entityConstructor),
+            File::QUEUE_ALWAYS
         );
-
-        $managerInterface->setAuxFile(true);
 
         $this->addFile($managerInterface);
-    }
-
-    /**
-     * @return void
-     */
-    protected function addManagerServiceFile()
-    {
-        $filePath = sprintf(
-            '%s' . DIRECTORY_SEPARATOR . 'Resources' .
-            DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'managers.%s',
-            ($this->getTargetDirectory()) ?: $this->getBundle()->getPath(),
-            $this->getFormat()
-        );
-
-        $serviceFile = new File(
-            $filePath,
-            $this->getServiceFileContents($filePath)
-        );
-
-        $serviceFile->setServiceFile(true);
-
-        $this->addMessage(sprintf(
-            'Make sure to load "%s" in your extension file to enable the new services.',
-            $serviceFile->getBasename()
-        ));
-
-        $this->addFile($serviceFile);
     }
 
     /**
@@ -271,8 +237,7 @@ class ManagerGenerator extends AbstractServiceGenerator
             $this->getEntity()
         );
 
-        $paramKey = $this->getServiceClass();
-
+        $paramKey  = $this->getServiceClassKey();
         $serviceId = $this->getServiceId();
 
         $definition = new Definition('%' . $paramKey . '%');
@@ -302,7 +267,7 @@ class ManagerGenerator extends AbstractServiceGenerator
     {
         return sprintf(
             '%s.entity.manager.%s_manager',
-            $this->getServiceNamespace(),
+            $this->getServiceBundleNamespace(),
             $this->getServiceEntityName()
         );
     }
@@ -310,7 +275,7 @@ class ManagerGenerator extends AbstractServiceGenerator
     /**
      * @return string
      */
-    private function getServiceClass()
+    private function getServiceClassKey()
     {
         return $this->getServiceId() . '.class';
     }

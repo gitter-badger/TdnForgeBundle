@@ -5,9 +5,9 @@
      */
     protected function get{{ entity }}Handler()
     {
-{% if format == 'annotation' -%}
+{% if format == 'annotation' %}
         return $this->{{ entity|lowerfirst }}Handler;
-{%- else -%}
+{% else %}
 {% if ((entity|length + bundle|replace({'_bundle': ''})|length) / 2) >= 31 %}
         return $this->container->get(
             '{{ bundle|underscore|lower|replace({'_bundle': ''})}}.handler.{{ entity|underscore|lower }}_handler'
@@ -15,6 +15,6 @@
 {% else %}
         return $this->container->get('{{ bundle|underscore|lower|replace({'_bundle': ''})}}.handler.{{ entity|underscore|lower }}_handler');
 {% endif %}
-{%- endif %}
+{% endif %}
     }
 {% endblock extras_methods %}

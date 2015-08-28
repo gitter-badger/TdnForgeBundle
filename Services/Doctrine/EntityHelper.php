@@ -30,6 +30,14 @@ class EntityHelper
     }
 
     /**
+     * @return ManagerRegistry
+     */
+    public function getManagerRegistry()
+    {
+        return $this->managerRegistry;
+    }
+
+    /**
      * @param string $directory
      * @param string $bundleName
      * @param array|string $excludes
@@ -75,10 +83,10 @@ class EntityHelper
      */
     public function getMetadata(BundleInterface $bundle, $entity)
     {
-        $entity = $this->managerRegistry->getAliasNamespace($bundle->getName()) . '\\' . $entity;
+        $entity = $this->getManagerRegistry()->getAliasNamespace($bundle->getName()) . '\\' . $entity;
 
         try {
-            return $this->managerRegistry->getManagerForClass($entity)
+            return $this->getManagerRegistry()->getManagerForClass($entity)
                 ->getMetadataFactory()
                 ->getMetadataFor($entity);
         } catch (\Exception $e) {

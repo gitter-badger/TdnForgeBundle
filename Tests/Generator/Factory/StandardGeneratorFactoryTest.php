@@ -63,6 +63,23 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
         $this->filesystem->mkdir($this->outDir);
     }
 
+    /**
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessageRegExp /Invalid type \'.*\'. Supported types are: .*$/
+     */
+    public function testBadGeneratorInstance()
+    {
+        $this->standardGeneratorFactory->create(
+            'BadGeneratorType',
+            $this->getMetadata(),
+            $this->getBundle(),
+            Format::YAML,
+            '',
+            false,
+            []
+        );
+    }
+
     public function testControllerGeneratorInstance()
     {
         $this->assertContains(
@@ -79,7 +96,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
                 Format::YAML,
                 $this->outDir,
                 false,
-                ['prefix' => '1']
+                []
             )
         );
     }
@@ -165,7 +182,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
                 Format::YAML,
                 '',
                 false,
-                ['routing-file' => 'routing']
+                []
             )
         );
     }

@@ -14,14 +14,14 @@ class PostProcessorsPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
-        if (!$container->hasDefinition('tdn_forge.template.strategy.default')
-            || !$container->hasDefinition('tdn_forge.template.postprocessor.chain')
+        if (!$container->hasDefinition('tdn_forge.writer.strategy.default')
+            || !$container->hasDefinition('tdn_forge.writer.postprocessor.chain')
         ) {
             return;
         }
 
-        $postProcessors = $container->findTaggedServiceIds('tdn_forge.template.postprocessor');
-        $definition = $container->getDefinition('tdn_forge.template.postprocessor.postprocessor_chain');
+        $postProcessors = $container->findTaggedServiceIds('tdn_forge.writer.postprocessor');
+        $definition = $container->getDefinition('tdn_forge.writer.postprocessor.postprocessor_chain');
 
         foreach ($postProcessors as $id => $tags) {
             $definition->addMethodCall('addPostProcessor', [new Reference($id)]);

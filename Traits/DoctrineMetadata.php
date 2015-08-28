@@ -19,13 +19,12 @@ trait DoctrineMetadata
     /**
      * @param ClassMetadata $metadata
      */
-    public function setMetadata(ClassMetadata $metadata)
+    protected function setMetadata(ClassMetadata $metadata)
     {
-        if (count($metadata->identifier) > 1) {
-            throw new \RuntimeException(sprintf(
-                'The %s does not support entity classes with multiple primary keys.',
-                __CLASS__
-            ));
+        if (count($metadata->identifier) !== 1) {
+            throw new \RuntimeException(
+                'This bundle does not support entity classes with multiple or no primary key(s).'
+            );
         }
 
         $this->metadata = $metadata;
@@ -39,11 +38,10 @@ trait DoctrineMetadata
         return $this->metadata;
     }
 
-
     /**
      * @return string
      */
-    public function getEntity()
+    protected function getEntity()
     {
         return $this->cleanMetadataProperty($this->getMetadata()->getName());
     }
@@ -51,7 +49,7 @@ trait DoctrineMetadata
     /**
      * @return string
      */
-    public function getEntityNamespace()
+    protected function getEntityNamespace()
     {
         return $this->cleanMetadataProperty($this->getMetadata()->namespace);
     }
@@ -68,12 +66,6 @@ trait DoctrineMetadata
      */
     protected function getEntityIdentifier()
     {
-        if (count($this->getMetadata()->identifier) !== 1) {
-            throw new \RuntimeException(
-                'TdnForgeBundle is incompatible with entities that contain more than one identifier or no identifier.'
-            );
-        }
-
         return $this->getMetadata()->getIdentifierFieldNames()[0];
     }
 

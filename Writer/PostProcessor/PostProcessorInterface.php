@@ -1,13 +1,13 @@
 <?php
 
-namespace Tdn\ForgeBundle\Template\PostProcessor;
+namespace Tdn\ForgeBundle\Writer\PostProcessor;
 
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Finder\SplFileInfo;
+use \SplFileInfo;
 
 /**
  * Interface PostProcessorInterface
- * @package Tdn\ForgeBundle\Template\PostProcessor
+ * @package Tdn\ForgeBundle\Writer\PostProcessor
  */
 interface PostProcessorInterface
 {

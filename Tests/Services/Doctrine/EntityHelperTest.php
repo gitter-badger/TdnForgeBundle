@@ -20,16 +20,17 @@ class EntityHelperTest extends \PHPUnit_Framework_TestCase
     /**
      * @var EntityHelper
      */
-    protected $entityUtils;
+    private $entityUtils;
+
+    /**
+     * @var \SplFileInfo
+     */
+    private $fixturesDir;
 
     protected function setUp()
     {
-        $this->entityUtils = $this->getEntityHelper();
-    }
-
-    public function testGetClassesInDirectory()
-    {
-        $fixturesDir = new \SplFileInfo(
+        $this->entityUtils = new EntityHelper($this->getDoctrine());
+        $this->fixturesDir = new \SplFileInfo(
             realpath(
                 __DIR__
                 . DIRECTORY_SEPARATOR . ".."
@@ -38,15 +39,18 @@ class EntityHelperTest extends \PHPUnit_Framework_TestCase
                 . DIRECTORY_SEPARATOR . 'dummy-entities'
             )
         );
+    }
 
-        $fixtureEntities = [
-            'FooBundle:Foo',
-            'FooBundle:Bar',
-            'FooBundle:Baz',
-        ];
-
+    /**
+     * @dataProvider dataProvider
+     *
+     * @param array $fixtureEntities
+     * @param array $excluding
+     */
+    public function testGetClassesInDirectory(array $fixtureEntities, array $excluding = [])
+    {
         $actualFixtures = $this->entityUtils
-            ->getClassesInDirectory($fixturesDir->getRealPath(), 'FooBundle')
+            ->getClassesInDirectory($this->fixturesDir->getRealPath(), 'FooBundle', $excluding)
             ->toArray()
         ;
 
@@ -66,31 +70,71 @@ class EntityHelperTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @return EntityHelper
-     */
-    private function getEntityHelper()
+    public function dataProvider()
     {
-        $entityUtils = Mockery::mock(new EntityHelper($this->getDoctrine()));
-        $entityUtils
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'getMetadata' => $this->getMetadata()
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
+        return [
+            [['FooBundle:Foo', 'FooBundle:Bar', 'FooBundle:Baz']],
+            [['FooBundle:Foo', 'FooBundle:Baz'], ['Bar']]
+        ];
+    }
 
-        return $entityUtils;
+    public function testDoctrine()
+    {
+        $this->assertEquals($this->getDoctrine(), $this->entityUtils->getManagerRegistry());
     }
 
     /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessageRegExp /Could not find metadata for class (.*). Error: (.*)/
+     */
+    public function testBadMetadata()
+    {
+        $entityHelper = new EntityHelper($this->getDoctrine(true));
+        $entityHelper->getMetadata($this->getBundle(), 'Foo');
+    }
+
+    /**
+     * @param bool $badMetadata
+     *
      * @return ManagerRegistry
      */
-    private function getDoctrine()
+    private function getDoctrine($badMetadata = false)
     {
-        return Mockery::mock('\Doctrine\Common\Persistence\ManagerRegistry');
+        $metadataFactory = Mockery::mock('\Doctrine\Common\Persistence\Mapping\ClassMetadataFactory');
+        if ($badMetadata) {
+            $metadataFactory
+                ->shouldIgnoreMissing()
+                ->shouldReceive('getMetadataFor')
+                ->andThrow(new \Exception('Foo'))
+            ;
+        } else {
+            $metadataFactory
+                ->shouldIgnoreMissing()
+                ->shouldReceive([
+                    'getMetadataFor' => $this->getMetadata()
+                ])
+                ->withAnyArgs();
+        }
+
+        $om = Mockery::mock('\Doctrine\Common\Persistence\ObjectManager');
+        $om
+            ->shouldIgnoreMissing()
+            ->shouldReceive([
+                'getMetadataFactory' => $metadataFactory
+            ])
+        ;
+
+        $doctrine = Mockery::mock('\Doctrine\Common\Persistence\ManagerRegistry');
+        $doctrine
+            ->shouldIgnoreMissing()
+            ->shouldReceive([
+                'getManagerForClass' => $om
+            ])
+            ->withAnyArgs()
+            ->zeroOrMoreTimes()
+        ;
+
+        return $doctrine;
     }
 
     protected function tearDown()

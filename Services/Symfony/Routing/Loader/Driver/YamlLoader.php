@@ -32,7 +32,8 @@ class YamlLoader extends AbstractLoader implements LoaderInterface
     {
         $yamlParser = new Yaml();
 
-        return $yamlParser->parse(file_get_contents($path));
+        $contents = file_get_contents($path);
+        return ($contents !== false && !empty($contents)) ? $yamlParser->parse($contents) : [];
     }
 
     /**
@@ -47,7 +48,7 @@ class YamlLoader extends AbstractLoader implements LoaderInterface
             $routeDefinition = new RouteDefinition(
                 $id,
                 $route['resource'],
-                $route['prefix'],
+                (isset($route['prefix']) ? $route['prefix'] : ''),
                 $route['type']
             );
 

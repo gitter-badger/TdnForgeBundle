@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
+use Tdn\ForgeBundle\Generator\RoutingGenerator;
 
 /**
  * Class GenerateRoutingCommand
@@ -17,11 +18,6 @@ use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
  */
 class GenerateRoutingCommand extends AbstractGeneratorCommand
 {
-    /**
-     * @var string
-     */
-    const DEFAULT_ROUTING = 'routing';
-
     /**
      * @var string
      */
@@ -42,8 +38,7 @@ class GenerateRoutingCommand extends AbstractGeneratorCommand
             ->addArgument(
                 'routing-file',
                 InputArgument::OPTIONAL,
-                'The routing file, defaults to: ' . self::DEFAULT_ROUTING . '.' . self::DEFAULT_FORMAT,
-                self::DEFAULT_ROUTING
+                'The routing file, defaults to "' . RoutingGenerator::DEFAULT_ROUTING_FILE . '".'
             )
             ->addOption(
                 'prefix',
@@ -60,14 +55,14 @@ class GenerateRoutingCommand extends AbstractGeneratorCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        $this->setOptions([
+        $this->setGeneratorOptions([
             'routing-file' => $input->getArgument('routing-file'),
             'prefix' => $input->getOption('prefix')
         ]);
 
-        parent::interact($input, $output);
+        parent::initialize($input, $output);
     }
 
     /**
@@ -76,13 +71,5 @@ class GenerateRoutingCommand extends AbstractGeneratorCommand
     protected function getType()
     {
         return GeneratorFactoryInterface::TYPE_ROUTING_GENERATOR;
-    }
-
-    /**
-     * @return string[]
-     */
-    protected function getFiles()
-    {
-        return ['Routing config'];
     }
 }

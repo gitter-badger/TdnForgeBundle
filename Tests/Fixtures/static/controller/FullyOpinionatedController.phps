@@ -20,7 +20,7 @@ use Foo\BarBundle\Entity\FooInterface;
  * Class FooController
  * @package Foo\BarBundle\Controller
  * @Rest\RouteResource("Foos")
- * @Rest\Prefix("v1")
+ * @Rest\Prefix("api")
  */
 class FooController extends FOSRestController
 {

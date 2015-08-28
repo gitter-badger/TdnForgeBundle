@@ -4,8 +4,6 @@ namespace Tdn\ForgeBundle\Tests\Command;
 
 use Symfony\Component\Console\Tester\CommandTester;
 use Tdn\ForgeBundle\Command\GenerateRoutingCommand;
-use Tdn\ForgeBundle\Generator\RoutingGenerator;
-use Tdn\ForgeBundle\Model\File;
 use \Mockery;
 
 /**
@@ -20,11 +18,10 @@ class GenerateRoutingCommandTest extends AbstractGeneratorCommandTest
      * @param string $routePrefix
      * @param string $format
      * @param string $entity
-     * @param File[] $files
      *
      * @dataProvider optionsProvider
      */
-    public function testExecute($overWrite, $routingFile, $routePrefix, $format, $entity, array $files)
+    public function testExecute($overWrite, $routingFile, $routePrefix, $format, $entity)
     {
         $options = [
             'command'            => $this->getCommand()->getName(),
@@ -38,8 +35,8 @@ class GenerateRoutingCommandTest extends AbstractGeneratorCommandTest
 
         $tester = new CommandTester($this->getFullCommand());
         $tester->execute($options);
-        foreach ($files as $generatedFile) {
-            $this->assertRegExp('#' . $generatedFile->getRealPath() . '#', $tester->getDisplay());
+        foreach ($this->getFiles() as $file) {
+            $this->assertRegExp($this->getCommandDisplayMessage($file), $tester->getDisplay());
         }
     }
 
@@ -68,85 +65,17 @@ class GenerateRoutingCommandTest extends AbstractGeneratorCommandTest
             [
                 false,
                 'routing',
-                'v1',
+                'api',
                 'yaml',
-                'FooBarBundle:Foo',
-                $this->getProcessedYamlFiles()
+                'FooBarBundle:Foo'
             ],
             [
                 false,
                 'routing',
-                'v1',
+                'api',
                 'xml',
-                'FooBarBundle:Foo',
-                $this->getProcessedXmlFiles()
+                'FooBarBundle:Foo'
             ]
-        ];
-    }
-
-    /**
-     * @return File[]
-     */
-    protected function getProcessedFiles()
-    {
-        return array_merge($this->getProcessedYamlFiles(), $this->getProcessedXmlFiles());
-    }
-
-    /**
-     * @return Mockery\MockInterface|RoutingGenerator
-     */
-    protected function getGenerator(array $processedFiles)
-    {
-        $generator = Mockery::mock('\Tdn\ForgeBundle\Generator\RoutingGenerator');
-
-        return $this->configureGeneratorMock($generator, $processedFiles);
-    }
-
-    /**
-     * @return File[]
-     */
-    protected function getProcessedYamlFiles()
-    {
-        $routingFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
-        $routingFileMock
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'getRealPath'  => $this->getOutDir() .
-                        DIRECTORY_SEPARATOR . 'Resources' .
-                        DIRECTORY_SEPARATOR . 'config' .
-                        DIRECTORY_SEPARATOR . 'routing.yaml'
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return [
-            $routingFileMock->getRealPath() => $routingFileMock
-        ];
-    }
-
-    /**
-     * @return File[]
-     */
-    protected function getProcessedXmlFiles()
-    {
-        $routingFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
-        $routingFileMock
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'getRealPath'  => $this->getOutDir() .
-                        DIRECTORY_SEPARATOR . 'Resources' .
-                        DIRECTORY_SEPARATOR . 'config' .
-                        DIRECTORY_SEPARATOR . 'routing.xml'
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return [
-            $routingFileMock->getRealPath() => $routingFileMock
         ];
     }
 }

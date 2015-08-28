@@ -1,0 +1,19 @@
+parameters:
+    tdn_forge.writer.postprocessor.postprocessor_chain.class: Tdn\ForgeBundle\Writer\PostProcessor\PostProcessorChain
+    tdn_forge.writer.postprocessor.abstract_postprocessor.class: Tdn\ForgeBundle\Writer\PostProcessor\AbstractPostProcessor
+    tdn_forge.writer.postprocessor.psr_postprocessor.class: Tdn\ForgeBundle\Writer\PostProcessor\PsrPostProcessor
+
+services:
+    tdn_forge.writer.postprocessor.postprocessor_chain:
+        class: %tdn_forge.writer.postprocessor.postprocessor_chain.class%
+
+    tdn_forge.writer.postprocessor.abstract_postprocessor:
+        abstract: true
+        class: %tdn_forge.writer.postprocessor.abstract_postprocessor.class%
+        arguments: ["%kernel.root_dir%"]
+
+    tdn_forge.writer.postprocessor.psr_postprocessor:
+        parent: tdn_forge.writer.postprocessor.abstract_postprocessor
+        class: %tdn_forge.writer.postprocessor.psr_postprocessor.class%
+        tags:
+            - { name: tdn_forge.writer.postprocessor}

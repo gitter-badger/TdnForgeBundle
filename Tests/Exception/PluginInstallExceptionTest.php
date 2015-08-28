@@ -17,7 +17,7 @@ class PluginInstallExceptionTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException        \Tdn\ForgeBundle\Exception\PluginInstallException
-     * @expectedExceptionMessage Error installing plugin Foo
+     * @expectedExceptionMessage Error installing plugin: Foo
      */
     public function testExceptionMessage()
     {

@@ -52,7 +52,9 @@ class XmlDumper extends AbstractDumper implements DumperInterface
         $importEntry->setAttribute('id', $route->getId());
         $importEntry->setAttribute('resource', $route->getResource());
         $importEntry->setAttribute('type', $route->getType());
-        $importEntry->setAttribute('prefix', $route->getPrefix());
+        if ($route->getPrefix()) {
+            $importEntry->setAttribute('prefix', $route->getPrefix());
+        }
         $parent->appendChild($importEntry);
     }
 }

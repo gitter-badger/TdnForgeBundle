@@ -22,19 +22,17 @@ class TdnForgeExtension extends Extension
         $config = $this->processConfiguration(new Configuration(), $configs);
         $this->addTemplateOverrides($config, $container);
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('template-postprocessors.yml');
-        $loader->load('template-strategies.yml');
+        $loader->load('writer-postprocessors.yml');
+        $loader->load('writer-strategy.yml');
+        $loader->load('template-strategy.yml');
         $loader->load('doctrine.yml');
         $loader->load('symfony.yml');
         $loader->load('generator.yml');
-
     }
 
     protected function addTemplateOverrides(array $config, ContainerBuilder $container)
     {
-        if (isset($config['skeleton_overrides'])) {
-            $container->set('tdn_forge.template.strategy.skeleton_dir_overrides', $config['skeleton_overrides']);
-        }
+        $container->setParameter('tdn_forge.template.strategy.skeleton_dir_overrides', $config['skeleton_overrides']);
     }
 
     public function getAlias()

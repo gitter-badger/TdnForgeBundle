@@ -5,7 +5,7 @@ namespace Tdn\ForgeBundle\Template\Strategy;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Template\PostProcessor\PostProcessorInterface;
+use Tdn\ForgeBundle\Writer\PostProcessor\PostProcessorInterface;
 
 /**
  * Interface TemplateStrategyInterface
@@ -35,9 +35,4 @@ interface TemplateStrategyInterface
      * @return string
      */
     public function render($template, array $parameters);
-
-    /**
-     * @param File $target
-     */
-    public function renderFile(File $target);
 }

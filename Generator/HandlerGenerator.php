@@ -15,11 +15,12 @@ use Tdn\ForgeBundle\Model\ServiceDefinition;
 class HandlerGenerator extends AbstractServiceGenerator
 {
     /**
-     * Generates REST Handler based on entity.
-     *
-     * @return $this
+     * Adds a Rest Handler for entity
+     * Adds EntityManager dependency
+     * Adds FormType dependency
+     * Adds service file
      */
-    public function configure()
+    protected function configure()
     {
         $handler = new File(
             sprintf(
@@ -35,10 +36,10 @@ class HandlerGenerator extends AbstractServiceGenerator
         $this->addFormTypeDependency();
 
         if ($this->getFormat() !== Format::ANNOTATION) {
-            $this->addHandlerServiceFile();
+            $this->addServiceFile('handlers');
         }
 
-        return $this;
+        parent::configure();
     }
 
     /**
@@ -56,39 +57,13 @@ class HandlerGenerator extends AbstractServiceGenerator
     }
 
     /**
-     * @return void
-     */
-    protected function addHandlerServiceFile()
-    {
-        $filePath = sprintf(
-            '%s' . DIRECTORY_SEPARATOR . 'Resources' .
-            DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'handlers.%s',
-            ($this->getTargetDirectory()) ?: $this->getBundle()->getPath(),
-            $this->getFormat()
-        );
-        $serviceFile = new File(
-            $filePath,
-            $this->getServiceFileContents($filePath)
-        );
-
-        $serviceFile->setServiceFile(true);
-
-        $this->addMessage(sprintf(
-            'Make sure to load "%s" in your extension file to enable the new services.',
-            $serviceFile->getBasename()
-        ));
-
-        $this->addFile($serviceFile);
-    }
-
-    /**
      * Declares service and returns what the contents would be based on the format selected
      *
      * @param string $filePath
      *
      * @return string
      */
-    public function getServiceFileContents($filePath)
+    protected function getServiceFileContents($filePath)
     {
         $serviceClass = sprintf(
             '%s\\Handler\\%sHandler',
@@ -158,11 +133,14 @@ class HandlerGenerator extends AbstractServiceGenerator
     {
         return sprintf(
             '%s.handler.%s_handler',
-            $this->getServiceNamespace(),
+            $this->getServiceBundleNamespace(),
             $this->getServiceEntityName()
         );
     }
 
+    /**
+     * @return string
+     */
     private function getServiceClass()
     {
         return $this->getServiceId() . '.class';

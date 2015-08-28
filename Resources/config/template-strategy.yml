@@ -1,0 +1,6 @@
+parameters:
+    tdn_forge.template.strategy.twig_template_strategy.class: Tdn\ForgeBundle\Template\Strategy\TwigTemplateStrategy
+
+services:
+    tdn_forge.template.strategy.default:
+        class: %tdn_forge.template.strategy.twig_template_strategy.class%
