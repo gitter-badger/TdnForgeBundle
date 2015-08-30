@@ -5,10 +5,10 @@ namespace Tdn\ForgeBundle\Template\Strategy;
 use Tdn\PhpTypes\Type\String;
 
 /**
- * Class TwigStrategy
+ * Class TwigTemplateStrategy
  * @package Tdn\ForgeBundle\Template\Strategy
  */
-class TwigStrategy extends AbstractStrategy implements TemplateStrategyInterface
+class TwigTemplateStrategy extends AbstractTemplateStrategy implements TemplateStrategyInterface
 {
     /**
      * @var array|\Twig_SimpleFilter[]

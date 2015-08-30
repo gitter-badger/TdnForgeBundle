@@ -4,7 +4,7 @@ namespace Tdn\ForgeBundle\Generator\Factory;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
-use Tdn\ForgeBundle\Generator\CommandGenerator;
+use Tdn\ForgeBundle\Generator\GeneratorInterface;
 
 /**
  * Interface GeneratorFactoryInterface
@@ -32,7 +32,7 @@ interface GeneratorFactoryInterface
      * @param bool $overwrite
      * @param array $options
      *
-     * @return CommandGenerator
+     * @return GeneratorInterface
      */
     public function create(
         $type,

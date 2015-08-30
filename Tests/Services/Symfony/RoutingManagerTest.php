@@ -8,34 +8,57 @@ use Tdn\ForgeBundle\Model\File;
 use Tdn\ForgeBundle\Services\Symfony\RoutingManager;
 
 /**
- * Class RoutingFileUtilsTest
+ * Class RoutingManagerTest
  * @package Tdn\ForgeBundle\Tests\Services\Symfony
  */
-class RoutingFileUtilsTest extends \PHPUnit_Framework_TestCase
+class RoutingManagerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var RoutingManager
      */
-    protected $routingFileUtils;
+    protected $routingManager;
 
     protected function setUp()
     {
-        $this->routingFileUtils = new RoutingManager();
+        $this->routingManager = new RoutingManager();
     }
 
-    public function testSupportedExtensions()
+    public function testSupportedFormat()
     {
         $this->assertContains(Format::YAML, RoutingManager::getSupportedExtensions());
         $this->assertContains(Format::XML, RoutingManager::getSupportedExtensions());
         $this->assertNotContains(Format::ANNOTATION, RoutingManager::getSupportedExtensions());
     }
 
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessageRegExp /Invalid format. Expected one of (.*), got (.*)./
+     */
+    public function testNotSupportedFormat()
+    {
+        $this->routingManager->dump(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'foo.zip');
+    }
+
     public function testAddDefinition()
     {
         $routeDefinition = $this->getRouteDefinition();
-        $this->assertEmpty($this->routingFileUtils->getRouteDefinitions());
-        $this->routingFileUtils->addRouteDefinition($routeDefinition);
-        $this->assertContains($routeDefinition, $this->routingFileUtils->getRouteDefinitions());
+        $this->assertEmpty($this->routingManager->getRouteDefinitions());
+        $this->routingManager->addRouteDefinition($routeDefinition);
+        $this->assertContains($routeDefinition, $this->routingManager->getRouteDefinitions());
+    }
+
+    public function testDumpExisting()
+    {
+        $routeDefinition = $this->getRouteDefinition();
+        $file = new File(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'foo.yaml');
+        $file->openFile('w')->fwrite('');
+
+        $this->routingManager->addRouteDefinition($routeDefinition);
+        $this->assertEquals(
+            self::getStaticData('routing', 'routing.yaml'),
+            $this->routingManager->dump($file->getRealPath())
+        );
+        unlink($file->getRealPath());
     }
 
     /**
@@ -47,9 +70,11 @@ class RoutingFileUtilsTest extends \PHPUnit_Framework_TestCase
     public function testDump($format, $fileName)
     {
         $routeDefinition = $this->getRouteDefinition();
-        $file = new File(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $fileName);
-        $this->routingFileUtils->addRouteDefinition($routeDefinition);
-        $this->assertEquals($format, $this->routingFileUtils->dump($file));
+        $this->routingManager->addRouteDefinition($routeDefinition);
+        $this->assertEquals(
+            $format,
+            $this->routingManager->dump(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $fileName)
+        );
     }
 
     /**
@@ -75,9 +100,9 @@ class RoutingFileUtilsTest extends \PHPUnit_Framework_TestCase
     private function getRouteDefinition()
     {
         return new RouteDefinition(
-            'api_foo_v1',
+            'foobar_api_foo',
             '@FooBarBundle/Controller/FooController.php',
-            'v1',
+            'api',
             'rest'
         );
     }

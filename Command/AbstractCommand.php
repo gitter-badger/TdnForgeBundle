@@ -3,12 +3,12 @@
 namespace Tdn\ForgeBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Sensio\Bundle\GeneratorBundle\Command\Helper\QuestionHelper;
-use Tdn\ForgeBundle\Model\File;
+use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
+use Tdn\ForgeBundle\Writer\Strategy\WriterStrategyInterface;
 use Tdn\ForgeBundle\Services\Doctrine\EntityHelper;
-use Tdn\ForgeBundle\Services\Symfony\ServiceManager;
 
 /**
  * Class AbstractCommand
@@ -25,9 +25,9 @@ abstract class AbstractCommand extends ContainerAwareCommand
     private $container;
 
     /**
-     * @return ContainerInterface
+     * Overriding
      *
-     * @throws \LogicException
+     * @return ContainerInterface
      */
     protected function getContainer()
     {
@@ -43,22 +43,6 @@ abstract class AbstractCommand extends ContainerAwareCommand
     }
 
     /**
-     * @return EntityHelper
-     */
-    protected function getEntityHelper()
-    {
-        return $this->getContainer()->get('tdn_forge.doctrine.entity.helper');
-    }
-
-    /**
-     * @return ServiceManager
-     */
-    protected function getServiceFileUtils()
-    {
-        return $this->getContainer()->get('tdn_forge.symfony.service.utils');
-    }
-
-    /**
      * @return QuestionHelper
      */
     protected function getQuestionHelper()
@@ -67,22 +51,34 @@ abstract class AbstractCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param OutputInterface $output
-     * @param File $file
+     * @return KernelInterface
      */
-    protected function printFileGeneratedMessage(OutputInterface $output, File $file)
+    protected function getKernel()
     {
-        $output->writeln(sprintf(
-            'The new <info>%s</info> file has been created under <info>%s</info>.',
-            $file->getFilename(),
-            $file->getRealPath()
-        ));
+        return $this->getContainer()->get('kernel');
+    }
 
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln(sprintf(
-                'Contents:' . PHP_EOL . '%s',
-                $file->getContents()
-            ));
-        }
+    /**
+     * @return GeneratorFactoryInterface
+     */
+    protected function getGeneratorFactory()
+    {
+        return $this->getContainer()->get('tdn_forge.generator.factory.standard_generator_factory');
+    }
+
+    /**
+     * @return WriterStrategyInterface
+     */
+    protected function getWriterStrategy()
+    {
+        return $this->getContainer()->get('tdn_forge.writer.strategy.default');
+    }
+
+    /**
+     * @return EntityHelper
+     */
+    protected function getEntityHelper()
+    {
+        return $this->getContainer()->get('tdn_forge.doctrine.entity.helper');
     }
 }

@@ -9,11 +9,6 @@ namespace Tdn\ForgeBundle\Traits;
 interface TargetedOutputInterface
 {
     /**
-     * @param string $targetDirectory
-     */
-    public function setTargetDirectory($targetDirectory);
-
-    /**
      * @return string
      */
     public function getTargetDirectory();

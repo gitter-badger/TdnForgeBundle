@@ -18,7 +18,7 @@ trait Bundled
     /**
      * @param BundleInterface $bundle
      */
-    public function setBundle(BundleInterface $bundle)
+    protected function setBundle(BundleInterface $bundle)
     {
         $this->bundle = $bundle;
     }

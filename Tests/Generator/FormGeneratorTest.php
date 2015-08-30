@@ -2,11 +2,10 @@
 
 namespace Tdn\ForgeBundle\Tests\Generator;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Generator\FormGenerator;
 use Tdn\ForgeBundle\Model\File;
-use \Mockery;
 use Tdn\ForgeBundle\Model\Format;
+use \Mockery;
 
 /**
  * Class FormGeneratorTest
@@ -14,22 +13,46 @@ use Tdn\ForgeBundle\Model\Format;
  */
 class FormGeneratorTest extends AbstractGeneratorTest
 {
+
+    /**
+     * @expectedException \Tdn\ForgeBundle\Exception\CoreDependencyMissingException
+     * @expectedExceptionMessageRegExp /Please ensure the file (.*) exists and is readable./
+     */
+    public function testDependencyMissing()
+    {
+        $generator = $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            false,
+            [],
+            false
+        );
+
+        $generator->generate();
+    }
+
     public function optionsProvider()
     {
         return [
             [
                 Format::YAML,
+                self::getOutDir(),
                 true,
+                [],
                 $this->getProcessedFiles()
             ],
             [
                 Format::XML,
+                self::getOutDir(),
                 true,
+                [],
                 $this->getProcessedFiles()
             ],
             [
                 Format::ANNOTATION,
+                self::getOutDir(),
                 true,
+                [],
                 $this->getProcessedFiles()
             ]
         ];
@@ -49,44 +72,35 @@ class FormGeneratorTest extends AbstractGeneratorTest
         ];
     }
 
+
     /**
+     * @param string $format
+     * @param string $targetDir
+     * @param bool $overwrite
      * @param array $options
+     * @param bool $forceGeneration
      *
      * @return FormGenerator
      */
-    protected function getGenerator(array $options = [])
-    {
+    protected function getGenerator(
+        $format = Format::YAML,
+        $targetDir = null,
+        $overwrite = true,
+        array $options = [],
+        $forceGeneration = false
+    ) {
         $generator = new FormGenerator(
             $this->getMetadata(),
             $this->getBundle(),
             $this->getTemplateStrategy(),
-            Format::YAML,
-            self::getOutDir(),
-            false,
+            $format,
+            $targetDir,
+            $overwrite,
             $options,
-            false, //not forge
-            true   //ignore optional deps checks.
+            $forceGeneration
         );
 
         return $generator;
-    }
-
-    /**
-     * @return ArrayCollection|File[]
-     */
-    protected function getFileDependencies()
-    {
-        $managerFile = sprintf(
-            '%s' . DIRECTORY_SEPARATOR .
-            'Entity' . DIRECTORY_SEPARATOR .
-            'Manager' . DIRECTORY_SEPARATOR . '%sManager.php',
-            self::getOutDir(),
-            'Foo'
-        );
-
-        return new ArrayCollection([
-            new File($managerFile)
-        ]);
     }
 
     /**
@@ -99,10 +113,7 @@ class FormGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('form', 'FormType.phps'),
-                    'getFilename'  => 'FooType',
-                    'getExtension' => 'php',
-                    'getPath'      => self::getOutDir() . DIRECTORY_SEPARATOR . 'Form' . DIRECTORY_SEPARATOR . 'Type',
+                    'getQueue'   => self::getStaticData('form', 'FormType.phps'),
                     'getRealPath'  => self::getOutDir() .
                         DIRECTORY_SEPARATOR . 'Form' .
                         DIRECTORY_SEPARATOR . 'Type' .
@@ -125,10 +136,7 @@ class FormGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('exception', 'FormException.phps'),
-                    'getFilename'  => 'InvalidFormException',
-                    'getExtension' => 'php',
-                    'getPath'      => self::getOutDir() . DIRECTORY_SEPARATOR . 'Exception',
+                    'getQueue'   => self::getStaticData('exception', 'FormException.phps'),
                     'getRealPath'  => self::getOutDir() .
                         DIRECTORY_SEPARATOR . 'Exception' .
                         DIRECTORY_SEPARATOR . 'InvalidFormException.php'

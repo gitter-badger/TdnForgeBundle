@@ -3,7 +3,6 @@
 namespace Tdn\ForgeBundle\Tests\Generator;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Finder\SplFileInfo;
 use Tdn\ForgeBundle\Generator\ManagerGenerator;
 use Tdn\ForgeBundle\Model\File;
 use \Mockery;
@@ -20,39 +19,74 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
         return [
             [
                 Format::YAML,
-                true,
+                self::getOutDir(),
+                false,
+                [],
                 $this->getYamlFiles()
             ],
             [
                 Format::XML,
-                true,
+                self::getOutDir(),
+                false,
+                [],
                 $this->getXmlFiles()
             ],
             [
                 Format::ANNOTATION,
+                self::getOutDir(),
+                false,
+                [],
+                $this->getAnnotatedFiles()
+            ],
+            [
+                Format::YAML,
+                self::getOutDir(),
                 true,
+                [],
+                $this->getYamlFiles()
+            ],
+            [
+                Format::XML,
+                self::getOutDir(),
+                true,
+                [],
+                $this->getXmlFiles()
+            ],
+            [
+                Format::ANNOTATION,
+                self::getOutDir(),
+                true,
+                [],
                 $this->getAnnotatedFiles()
             ]
         ];
     }
 
     /**
+     * @param string $format
+     * @param string $targetDir
+     * @param bool $overwrite
      * @param array $options
+     * @param bool $forceGeneration
      *
      * @return ManagerGenerator
      */
-    protected function getGenerator(array $options = [])
-    {
+    protected function getGenerator(
+        $format = Format::YAML,
+        $targetDir = null,
+        $overwrite = true,
+        array $options = [],
+        $forceGeneration = false
+    ) {
         $generator = new ManagerGenerator(
             $this->getMetadata(),
             $this->getBundle(),
             $this->getTemplateStrategy(),
-            Format::YAML,
-            self::getOutDir(),
-            false,
+            $format,
+            $targetDir,
+            $overwrite,
             $options,
-            false, //not forge
-            true   //ignore optional deps checks.
+            $forceGeneration
         );
 
         $generator->setServiceManager($this->getServiceManager());
@@ -61,19 +95,11 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
     }
 
     /**
-     * @return ArrayCollection|SplFileInfo[]
-     */
-    protected function getFileDependencies()
-    {
-        return new ArrayCollection();
-    }
-
-    /**
      * @return ArrayCollection|string[]
      */
     protected function getExpectedMessages()
     {
-        if ($this->getGenerator()->getFormat() == Format::XML || $this->getGenerator()->getFormat() == Format::YAML) {
+        if ($this->getGenerator()->getFormat() !== Format::ANNOTATION) {
             return new ArrayCollection([
                 sprintf(
                     'Make sure to load "%s" in your extension file to enable the new services.',
@@ -133,11 +159,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'  => self::getStaticData('manager', 'AbstractManager.phps'),
-                    'getFilename'  => 'AbstractManager',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
-                    'getExtension' => 'php',
+                    'getQueue'  => self::getStaticData('manager', 'AbstractManager.phps'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'AbstractManager.php'
                 ]
@@ -158,11 +180,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'  => self::getStaticData('manager', 'AnnotatedAbstractManager.phps'),
-                    'getFilename'  => 'AbstractManager',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
-                    'getExtension' => 'php',
+                    'getQueue'  => self::getStaticData('manager', 'AnnotatedAbstractManager.phps'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'AbstractManager.php'
                 ]
@@ -183,11 +201,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('manager', 'Manager.phps'),
-                    'getFilename'  => 'FooManager',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
-                    'getExtension' => 'php',
+                    'getQueue'   => self::getStaticData('manager', 'Manager.phps'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'FooManager.php'
                 ]
@@ -208,11 +222,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('manager', 'AnnotatedManager.phps'),
-                    'getFilename'  => 'FooManager',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
-                    'getExtension' => 'php',
+                    'getQueue'   => self::getStaticData('manager', 'AnnotatedManager.phps'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'FooManager.php'
                 ]
@@ -233,11 +243,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('manager', 'ManagerInterface.phps'),
-                    'getFilename'  => 'FooManagerInterface',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Entity' . DIRECTORY_SEPARATOR . 'Manager',
+                    'getQueue'   => self::getStaticData('manager', 'ManagerInterface.phps'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Entity' . DIRECTORY_SEPARATOR . 'Manager' . DIRECTORY_SEPARATOR . 'FooManagerInterface.php'
                 ]
@@ -258,11 +264,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('manager', 'managers.xml'),
-                    'getFilename'  => 'managers',
-                    'getExtension' => 'xml',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('manager', 'managers.xml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'managers.xml'
                 ]
@@ -283,11 +285,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('manager', 'managers.yaml'),
-                    'getFilename'  => 'managers',
-                    'getExtension' => 'yaml',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('manager', 'managers.yaml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'managers.yaml'
                 ]

@@ -17,6 +17,7 @@ class RoutingGenerator extends AbstractGenerator
 {
     const TYPE = "rest";
     const API_PREFIX = "api_";
+    const DEFAULT_ROUTING_FILE = 'routing';
 
     /**
      * @var string
@@ -31,7 +32,7 @@ class RoutingGenerator extends AbstractGenerator
     /**
      * @param string $routingFile
      */
-    public function setRoutingFile($routingFile)
+    protected function setRoutingFile($routingFile)
     {
         $this->routingFile = $routingFile;
     }
@@ -47,7 +48,7 @@ class RoutingGenerator extends AbstractGenerator
     /**
      * @param string $prefix
      */
-    public function setPrefix($prefix)
+    protected function setPrefix($prefix)
     {
         $this->prefix = $prefix;
     }
@@ -61,10 +62,10 @@ class RoutingGenerator extends AbstractGenerator
     }
 
     /**
-     * Sets up routing file contents based on state for a specific entity (adding/removing).
-     * @return $this
+     * Adds Routing File
+     * Adds Controller Dependency
      */
-    public function configure()
+    protected function configure()
     {
         $this->addRoutingFile();
         $this->addControllerDependency();
@@ -78,7 +79,7 @@ class RoutingGenerator extends AbstractGenerator
             );
         }
 
-        return $this;
+        parent::configure();
     }
 
     /**
@@ -87,15 +88,16 @@ class RoutingGenerator extends AbstractGenerator
     protected function configureOptions(OptionsResolver $resolver)
     {
         $resolver
-            ->setRequired('routing-file')
+            ->setDefined('routing-file')
             ->setAllowedTypes('routing-file', 'string')
 
-            ->setRequired('prefix')
+            ->setDefined('prefix')
             ->setAllowedTypes('prefix', 'string')
         ;
 
         $resolver->setDefaults([
             'prefix' => '',
+            'routing-file' => self::DEFAULT_ROUTING_FILE
         ]);
     }
 
@@ -129,11 +131,9 @@ class RoutingGenerator extends AbstractGenerator
 
         $routingFile = new File(
             $filePath,
-            $this->getRoutingContents($filePath)
+            $this->getRoutingContents($filePath),
+            File::QUEUE_ALWAYS
         );
-
-        //Needed because this might exist but we still want to add routes to it
-        $routingFile->setAuxFile(true);
 
         $this->addFile($routingFile);
     }
@@ -156,7 +156,7 @@ class RoutingGenerator extends AbstractGenerator
             self::TYPE
         );
 
-        return $this->getRoutingFileUtils()
+        return $this->getRoutingManager()
             ->addRouteDefinition($routeDefinition)
             ->dump($filePath)
         ;
@@ -167,13 +167,26 @@ class RoutingGenerator extends AbstractGenerator
      */
     protected function createRouteId()
     {
-        return (string) String::create(self::API_PREFIX)
+        return (string) String::create($this->getRouteNamespace())
             ->ensureRight(
                 ($this->getPrefix() && $this->getFormat() !== Format::ANNOTATION) ?
-                $this->getEntity() . '_' . (string) String::create($this->getPrefix())->replace('/', '') :
-                $this->getEntity()
+                (string) String::create($this->getPrefix())->replace('/', '')->ensureLeft('_') : ''
+            )
+            ->ensureRight(
+                '_' . strtolower($this->getEntity())
             )
             ->toLowerCase();
+    }
+
+    /**
+     * @return string
+     */
+    protected function getRouteNamespace()
+    {
+        return (string) String::create($this->getBundle()->getName())
+            ->toLowerCase()
+            ->replace('bundle', '')
+        ;
     }
 
     /**
@@ -193,7 +206,7 @@ class RoutingGenerator extends AbstractGenerator
     /**
      * @return RoutingManager
      */
-    public function getRoutingFileUtils()
+    protected function getRoutingManager()
     {
         return new RoutingManager();
     }

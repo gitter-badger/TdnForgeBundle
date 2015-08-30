@@ -1,0 +1,8 @@
+
+parameters:
+    tdn_forge.writer.strategy.standard_writer_strategy.class: Tdn\ForgeBundle\Writer\Strategy\StandardWriterStrategy
+
+services:
+    tdn_forge.writer.strategy.default:
+        class: %tdn_forge.writer.strategy.standard_writer_strategy.class%
+        arguments: ['@tdn_forge.template.postprocessor.postprocessor_chain']

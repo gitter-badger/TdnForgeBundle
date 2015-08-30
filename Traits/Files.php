@@ -2,7 +2,6 @@
 
 namespace Tdn\ForgeBundle\Traits;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Model\File;
 
@@ -18,21 +17,9 @@ trait Files
     private $files;
 
     /**
-     * @param Collection $files
-     */
-    public function setFiles(Collection $files)
-    {
-        $this->files = new ArrayCollection();
-
-        foreach ($files as $generatedFile) {
-            $this->addFile($generatedFile);
-        }
-    }
-
-    /**
      * @param File $file
      */
-    public function addFile(File $file)
+    protected function addFile(File $file)
     {
         $this->files->set($file->getRealPath(), $file);
     }
@@ -40,7 +27,7 @@ trait Files
     /**
      * @return ArrayCollection|File[]
      */
-    public function getFiles()
+    protected function getFiles()
     {
         return $this->files;
     }

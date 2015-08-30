@@ -31,12 +31,4 @@ class GenerateManagerCommand extends AbstractGeneratorCommand
     {
         return GeneratorFactoryInterface::TYPE_MANAGER_GENERATOR;
     }
-
-    /**
-     * @return string[]
-     */
-    protected function getFiles()
-    {
-        return ['Entity Manager', 'Entity Manager Interface'];
-    }
 }

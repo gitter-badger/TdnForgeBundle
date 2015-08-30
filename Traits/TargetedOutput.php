@@ -16,7 +16,7 @@ trait TargetedOutput
     /**
      * @param string $targetDirectory
      */
-    public function setTargetDirectory($targetDirectory)
+    protected function setTargetDirectory($targetDirectory)
     {
         $this->targetDirectory = $targetDirectory;
     }

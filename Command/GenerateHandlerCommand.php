@@ -31,12 +31,4 @@ class GenerateHandlerCommand extends AbstractGeneratorCommand
     {
         return GeneratorFactoryInterface::TYPE_HANDLER_GENERATOR;
     }
-
-    /**
-     * @return string[]
-     */
-    protected function getFiles()
-    {
-        return ['Rest Handler'];
-    }
 }

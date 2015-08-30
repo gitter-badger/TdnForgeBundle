@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
+use Tdn\PhpTypes\Type\String;
 
 /**
  * Class GenerateControllerCommand
@@ -39,18 +40,24 @@ class GenerateControllerCommand extends AbstractGeneratorCommand
                 'Use NelmioApiDocBundle (which uses swagger-ui) to document the controller'
             )
             ->addOption(
-                'prefix',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'If using annotations, you should also add a prefix (e.g. v1) to the controller ' .
-                'if you want to version the api.'
-            )
-            ->addOption(
                 'with-tests',
                 null,
                 InputOption::VALUE_NONE,
                 'Use flag to generate standard CRUD tests. ' .
-                'Requires doctrine fixtures to be present. Specifications in Readme.'
+                'Requires doctrine/alice fixtures to be present. Requires LiipFunctionalTestBundle.'
+            )
+            ->addOption(
+                'prefix',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'When using annotations you could also add this value (e.g. "v1" or "api") to the url as a prefix.'
+            )
+            ->addOption(
+                'fixtures-path',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'When generating tests, the location of your fixtures is required.' .
+                'Supported fixture types are: Alice, Doctrine (e.g. objects implementing FixtureInterface)'
             )
         ;
 
@@ -71,26 +78,29 @@ class GenerateControllerCommand extends AbstractGeneratorCommand
     {
         $prefix = (!empty($routePrefix)) ? $routePrefix: '';
 
-        if ($prefix && '/' === $prefix[0]) {
-            $prefix = substr($prefix, 1);
-        }
-
-        return $prefix;
+        return (string) String::create($prefix)->removeLeft('/');
     }
 
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     *
+     * @throw \InvalidArgumentException when options mismatch.
      */
-    public function interact(InputInterface $input, OutputInterface $output)
+    public function initialize(InputInterface $input, OutputInterface $output)
     {
-        $this->setOptions([
-            'swagger' => ($input->getOption('with-swagger') ? true : false),
-            'prefix'  => $this->getRoutePrefix($input->getOption('prefix')),
-            'tests'   => ($input->getOption('with-tests') ? true : false)
+        if ($input->getOption('with-tests') && !$input->getOption('fixtures-path')) {
+            throw new \InvalidArgumentException('Fixtures path is required when enabling test generation.');
+        }
+
+        $this->setGeneratorOptions([
+            'swagger'       => ($input->getOption('with-swagger') ? true : false),
+            'tests'         => ($input->getOption('with-tests') ? true : false),
+            'prefix'        => $this->getRoutePrefix($input->getOption('prefix')),
+            'fixtures-path' => ($input->getOption('fixtures-path') ? $input->getOption('fixtures-path') : '')
         ]);
 
-        parent::interact($input, $output);
+        parent::initialize($input, $output);
     }
 
     /**
@@ -99,13 +109,5 @@ class GenerateControllerCommand extends AbstractGeneratorCommand
     protected function getType()
     {
         return GeneratorFactoryInterface::TYPE_CONTROLLER_GENERATOR;
-    }
-
-    /**
-     * @return string[]
-     */
-    protected function getFiles()
-    {
-        return ['Rest Controller'];
     }
 }

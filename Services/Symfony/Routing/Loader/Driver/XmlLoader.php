@@ -32,10 +32,30 @@ class XmlLoader extends AbstractLoader implements LoaderInterface
      */
     protected function loadFile($path)
     {
+        $prev = libxml_use_internal_errors(true);
         $doc = new \DOMDocument();
-        if (!$doc->load($path)) {
-            throw new InvalidXmlException("Error parsing file.");
+
+        if (false === $doc->load($path)) {
+            $errors = new ArrayCollection(libxml_get_errors());
+            $errors = $errors->map(function ($error) {
+                if (is_string($error)) {
+                    return $error;
+                }
+
+                if ($error instanceof \libXmlError) {
+                    return $error->message;
+                }
+            });
+
+            throw new InvalidXmlException(
+                sprintf(
+                    "Error(s) parsing file: %s.",
+                    implode(', ', $errors->toArray())
+                )
+            );
         }
+
+        libxml_use_internal_errors($prev);
 
         return $doc;
     }
@@ -49,18 +69,11 @@ class XmlLoader extends AbstractLoader implements LoaderInterface
         $routeCollection = new ArrayCollection();
         /** @var \DOMElement $import */
         foreach ($doc->getElementsByTagName('import') as $import) {
-            /** @var \DOMElement $default */
-            $defaults = [];
-            foreach ($import->getElementsByTagName('default') as $default) {
-                $defaults[$default->getAttribute('key')] = $default->nodeValue;
-            }
-
             $routeDefinition = new RouteDefinition(
                 $import->getAttribute('id'),
                 $import->getAttribute('resource'),
-                $import->getAttribute('prefix'),
-                $import->getAttribute('type'),
-                $defaults
+                ($import->hasAttribute('prefix') ? $import->getAttribute('prefix') : ''),
+                $import->getAttribute('type')
             );
 
             $routeCollection->set($routeDefinition->getId(), $routeDefinition);

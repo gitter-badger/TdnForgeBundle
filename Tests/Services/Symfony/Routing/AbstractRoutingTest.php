@@ -18,9 +18,9 @@ abstract class AbstractRoutingTest extends \PHPUnit_Framework_TestCase
     {
         $collection = new ArrayCollection();
         $routeDefinition = new RouteDefinition(
-            'api_foo_v1',
+            'foobar_api_foo',
             '@FooBarBundle/Controller/FooController.php',
-            'v1',
+            'api',
             'rest'
         );
 

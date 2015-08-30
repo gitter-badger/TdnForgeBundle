@@ -14,15 +14,15 @@ class FormGenerator extends AbstractGenerator
     /**
      * Sets up a FormType based on entity.
      * Sets up InvalidFormException if it doesn't exist exists.
-     * @return $this
+     * Adds Manager Dependency
      */
-    public function configure()
+    protected function configure()
     {
         $this->addFormType();
         $this->addFormException();
         $this->addManagerDependency();
 
-        return $this;
+        parent::configure();
     }
 
     /**
@@ -58,20 +58,11 @@ class FormGenerator extends AbstractGenerator
                 'Exception' . DIRECTORY_SEPARATOR . 'InvalidFormException.php',
                 ($this->getTargetDirectory()) ?: $this->getBundle()->getPath()
             ),
-            $this->getInvalidFormExceptionContent()
+            $this->getInvalidFormExceptionContent(),
+            File::QUEUE_IF_UPGRADE
         );
 
-        //File created only once unless there's an update.
-        if (!is_file($invalidFormException->getRealPath())
-            || $this->shouldOverWrite()
-            || $invalidFormException->isDirty()
-        ) {
-            if ($invalidFormException->isDirty() && $invalidFormException->isFile()) {
-                $this->addMessage("InvalidFormException was upgraded.");
-            }
-
-            $this->addFile($invalidFormException);
-        }
+        $this->addFile($invalidFormException);
     }
 
     /**

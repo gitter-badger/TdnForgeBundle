@@ -2,8 +2,6 @@
 
 namespace Tdn\ForgeBundle\Tests\Generator;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Finder\SplFileInfo;
 use Tdn\ForgeBundle\Generator\ControllerGenerator;
 use Tdn\ForgeBundle\Model\File;
 use \Mockery;
@@ -15,27 +13,22 @@ use Tdn\ForgeBundle\Model\Format;
  */
 class ControllerGeneratorTest extends AbstractGeneratorTest
 {
-    public function testPrefix()
-    {
-        $generator = $this->getGenerator();
-        $generator->setPrefix('api');
-        $this->assertEquals('api', $generator->getPrefix());
-    }
 
-    public function testSwagger()
+    /**
+     * @expectedException \Tdn\ForgeBundle\Exception\CoreDependencyMissingException
+     * @expectedExceptionMessageRegExp /Please ensure the file (.*) exists and is readable./
+     */
+    public function testDependencyMissing()
     {
-        $generator = $this->getGenerator();
-        $this->assertFalse($generator->hasSwagger());
-        $generator->setSwagger(true);
-        $this->assertTrue($generator->hasSwagger());
-    }
+        $generator = $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            false,
+            [],
+            false
+        );
 
-    public function testGenerateTests()
-    {
-        $generator = $this->getGenerator();
-        $this->assertFalse($generator->supportsTests());
-        $generator->setTests(true);
-        $this->assertTrue($generator->supportsTests());
+        $generator->generate();
     }
 
     public function optionsProvider()
@@ -44,109 +37,215 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
             [
                 //Basic Controller
                 Format::YAML, //Arbitrary non-annotation
+                self::getOutDir(),
                 true,
-                $this->getBasicFiles(),
                 [
                     'prefix' => '',
                     'swagger' => false,
-                    'tests' => false,
-                    'fixtures' => false
-                ]
+                    'tests' => false
+                ],
+                $this->getBasicFiles()
             ],
             [
                 //Opinionated Controller
                 Format::YAML, //Arbitrary non-annotation
+                self::getOutDir(),
                 true,
-                $this->getOpinionatedFiles(),
                 [
                     'prefix' => '',
                     'swagger' => true,
-                    'tests' => false,
-                    'fixtures' => false
-                ]
+                    'tests' => false
+                ],
+                $this->getOpinionatedFiles()
             ],
             [
                 //Fully Opinionated Controller
                 Format::ANNOTATION,
+                self::getOutDir(),
                 true,
-                $this->getFullyOpinionatedFiles(),
                 [
-                    'prefix' => 'v1',
+                    'prefix' => 'api',
                     'swagger' => true,
-                    'tests' => false,
-                    'fixtures' => false
-                ]
+                    'tests' => false
+                ],
+                $this->getFullyOpinionatedFiles()
             ]
         ];
     }
 
+    public function testDefaultOptions()
+    {
+        $generator = $this->getGenerator();
+        $this->assertEmpty($generator->getPrefix());
+        $this->assertEmpty($generator->getFixturesPath());
+        $this->assertFalse($generator->hasSwagger());
+        $this->assertFalse($generator->supportsTests());
+    }
+
+    public function testExplicitOptions()
+    {
+        $generator = $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            true,
+            [
+                'prefix' => 'api',
+                'fixtures-path' => sys_get_temp_dir(),
+                'swagger' => true,
+                'tests' => true
+            ]
+        );
+
+        $this->assertEquals('api', $generator->getPrefix());
+        $this->assertEquals(sys_get_temp_dir(), $generator->getFixturesPath());
+        $this->assertTrue($generator->hasSwagger());
+        $this->assertTrue($generator->supportsTests());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
+     * @dataProvider badOptionsProvider
+     *
+     * @param array $badOptions
+     */
+    public function testBadOptionValues(array $badOptions)
+    {
+        $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            true,
+            $badOptions
+        );
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException
+     */
+    public function testUndefinedOption()
+    {
+        $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            true,
+            ['non-existent' => true]
+        );
+    }
+
     /**
      * @return array
      */
-    private function getBasicFiles()
+    public function badOptionsProvider()
     {
         return [
+            [['prefix' => null]],
+            [['prefix' => false]],
+            [['prefix' => 1]],
+            [['fixtures-path' => null]],
+            [['fixtures-path' => false]],
+            [['fixtures-path' => 1]],
+            [['swagger' => null]],
+            [['swagger' => '']],
+            [['swagger' => 1]],
+            [['tests' => null]],
+            [['tests' => '']],
+            [['tests' => 1]]
+        ];
+    }
+
+    /**
+     * @param bool $withTests
+     *
+     * @return File[]
+     */
+    private function getBasicFiles($withTests = false)
+    {
+        $files = [
             $this->getBasicControllerFileMock()->getRealPath() => $this->getBasicControllerFileMock()
         ];
+
+        if ($withTests) {
+            $files = array_merge($files, $this->getTestFiles());
+        }
+
+        return $files;
     }
 
     /**
-     * @return array
+     * @param bool $withTests
+     *
+     * @return File[]
      */
-    private function getOpinionatedFiles()
+    private function getOpinionatedFiles($withTests = false)
     {
-        return [
+        $files = [
             $this->getOpinionatedControllerFileMock()->getRealPath() => $this->getOpinionatedControllerFileMock()
         ];
+
+        if ($withTests) {
+            $files = array_merge($files, $this->getTestFiles());
+        }
+
+        return $files;
     }
 
     /**
-     * @return array
+     * @param bool $withTests
+     *
+     * @return File[]
      */
-    private function getFullyOpinionatedFiles()
+    private function getFullyOpinionatedFiles($withTests = false)
     {
-        return [
+        $files = [
             $this->getFullyOpinionatedControllerFileMock()->getRealPath() =>
                 $this->getFullyOpinionatedControllerFileMock()
         ];
+
+        if ($withTests) {
+            $files = array_merge($files, $this->getTestFiles());
+        }
+
+        return $files;
     }
 
     /**
+     * @return File[]
+     */
+    private function getTestFiles()
+    {
+        return [
+            $this->getAbstractControllerTestFileMock()->getRealPath() => $this->getAbstractControllerTestFileMock(),
+            $this->getControllerTestFileMock()->getRealPath() => $this->getControllerTestFileMock()
+        ];
+    }
+
+    /**
+     * @param string $format
+     * @param string $targetDir
+     * @param bool $overwrite
      * @param array $options
+     * @param bool $forceGeneration
      *
      * @return ControllerGenerator
      */
-    protected function getGenerator(array $options = [])
-    {
+    protected function getGenerator(
+        $format = Format::YAML,
+        $targetDir = null,
+        $overwrite = true,
+        array $options = [],
+        $forceGeneration = false
+    ) {
         $generator = new ControllerGenerator(
             $this->getMetadata(),
             $this->getBundle(),
             $this->getTemplateStrategy(),
-            Format::YAML,
-            self::getOutDir(),
-            false,
+            $format,
+            $targetDir,
+            $overwrite,
             $options,
-            false, //not forge
-            true   //ignore optional deps checks.
+            $forceGeneration
         );
 
         return $generator;
-    }
-
-    /**
-     * @return ArrayCollection|SplFileInfo[]
-     */
-    protected function getFileDependencies()
-    {
-        $handlerFile = sprintf(
-            '%s' . DIRECTORY_SEPARATOR . 'Handler' . DIRECTORY_SEPARATOR . '%sHandler.php',
-            self::getOutDir(),
-            'Foo'
-        );
-
-        return new ArrayCollection([
-            new File($handlerFile)
-        ]);
     }
 
     /**
@@ -159,10 +258,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('controller', 'BasicController.phps'),
-                    'getFilename'  => 'FooController',
-                    'getExtension' => 'php',
-                    'getPath'      => self::getOutDir() . DIRECTORY_SEPARATOR . 'Controller',
+                    'getQueue'   => self::getStaticData('controller', 'BasicController.phps'),
                     'getRealPath'  => self::getOutDir() .
                         DIRECTORY_SEPARATOR . 'Controller' .
                         DIRECTORY_SEPARATOR . 'FooController.php'
@@ -184,10 +280,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('controller', 'OpinionatedController.phps'),
-                    'getFilename'  => 'FooController',
-                    'getExtension' => 'php',
-                    'getPath'      => self::getOutDir() . DIRECTORY_SEPARATOR . 'Controller',
+                    'getQueue'   => self::getStaticData('controller', 'OpinionatedController.phps'),
                     'getRealPath'  => self::getOutDir() .
                         DIRECTORY_SEPARATOR . 'Controller' .
                         DIRECTORY_SEPARATOR . 'FooController.php'
@@ -209,10 +302,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'  => self::getStaticData('controller', 'FullyOpinionatedController.phps'),
-                    'getFilename'  => 'FooController',
-                    'getExtension' => 'php',
-                    'getPath'      => self::getOutDir() . DIRECTORY_SEPARATOR . 'Controller',
+                    'getQueue'  => self::getStaticData('controller', 'FullyOpinionatedController.phps'),
                     'getRealPath'  => self::getOutDir() .
                         DIRECTORY_SEPARATOR . 'Controller' .
                         DIRECTORY_SEPARATOR . 'FooController.php'
@@ -224,55 +314,55 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
         return $controllerFileMock;
     }
 
-//    /**
-//     * @return File
-//     */
-//    protected function getAbstractControllerFileMock()
-//    {
-//        $controllerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
-//        $controllerFileMock
-//            ->shouldDeferMissing()
-//            ->shouldReceive(
-//                [
-//                    'getContent'  => ControllerData::ABSTRACT_CONTROLLER_TEST,
-//                    'getFilename'  => 'AbstractControllerTest',
-//                    'getExtension' => 'php',
-//                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Controller',
-//                    'getRealPath'  => $this->getOutDir() .
-//                        DIRECTORY_SEPARATOR . 'Tests' .
-//                        DIRECTORY_SEPARATOR . 'Controller' .
-//                        DIRECTORY_SEPARATOR . 'AbstractControllerTest.php'
-//                ]
-//            )
-//            ->zeroOrMoreTimes()
-//        ;
-//
-//        return $controllerFileMock;
-//    }
-//
-//    /**
-//     * @return File
-//     */
-//    protected function getControllerTestFileMock()
-//    {
-//        $controllerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
-//        $controllerFileMock
-//            ->shouldDeferMissing()
-//            ->shouldReceive(
-//                [
-//                    'getContent'  => ControllerData::CONTROLLER_TEST,
-//                    'getFilename'  => 'FooControllerTest',
-//                    'getExtension' => 'php',
-//                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Controller',
-//                    'getRealPath'  => $this->getOutDir() .
-//                        DIRECTORY_SEPARATOR . 'Tests' .
-//                        DIRECTORY_SEPARATOR . 'Controller' .
-//                        DIRECTORY_SEPARATOR . 'FooControllerTest.php'
-//                ]
-//            )
-//            ->zeroOrMoreTimes()
-//        ;
-//
-//        return $controllerFileMock;
-//    }
+    /**
+     * @return File
+     */
+    protected function getAbstractControllerTestFileMock()
+    {
+        $controllerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
+        $controllerFileMock
+            ->shouldDeferMissing()
+            ->shouldReceive(
+                [
+                    'getQueue'  => self::getStaticData(
+                        'controller' . DIRECTORY_SEPARATOR . 'test',
+                        'AbstractControllerTest.phps'
+                    ),
+                    'getRealPath'  => $this->getOutDir() .
+                        DIRECTORY_SEPARATOR . 'Tests' .
+                        DIRECTORY_SEPARATOR . 'Controller' .
+                        DIRECTORY_SEPARATOR . 'AbstractControllerTest.php'
+                ]
+            )
+            ->zeroOrMoreTimes()
+        ;
+
+        return $controllerFileMock;
+    }
+
+    /**
+     * @return File
+     */
+    protected function getControllerTestFileMock()
+    {
+        $controllerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
+        $controllerFileMock
+            ->shouldDeferMissing()
+            ->shouldReceive(
+                [
+                    'getQueue'  => self::getStaticData(
+                        'controller' . DIRECTORY_SEPARATOR . 'test',
+                        'FooControllerTest.phps'
+                    ),
+                    'getRealPath'  => $this->getOutDir() .
+                        DIRECTORY_SEPARATOR . 'Tests' .
+                        DIRECTORY_SEPARATOR . 'Controller' .
+                        DIRECTORY_SEPARATOR . 'FooControllerTest.php'
+                ]
+            )
+            ->zeroOrMoreTimes()
+        ;
+
+        return $controllerFileMock;
+    }
 }

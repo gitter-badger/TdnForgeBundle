@@ -14,23 +14,49 @@ use Tdn\ForgeBundle\Model\Format;
  */
 class HandlerGeneratorTest extends AbstractServiceGeneratorTest
 {
+
     /**
+     * @expectedException \Tdn\ForgeBundle\Exception\CoreDependencyMissingException
+     * @expectedExceptionMessageRegExp /Please ensure the file (.*) exists and is readable./
+     */
+    public function testDependencyMissing()
+    {
+        $generator = $this->getGenerator(
+            Format::YAML,
+            self::getOutDir(),
+            false,
+            [],
+            false
+        );
+
+        $generator->generate();
+    }
+
+    /**
+     * @param string $format
+     * @param string $targetDir
+     * @param bool $overwrite
      * @param array $options
+     * @param bool $forceGeneration
      *
      * @return HandlerGenerator
      */
-    protected function getGenerator(array $options = [])
-    {
+    protected function getGenerator(
+        $format = Format::YAML,
+        $targetDir = null,
+        $overwrite = true,
+        array $options = [],
+        $forceGeneration = false
+    ) {
         $generator = new HandlerGenerator(
             $this->getMetadata(),
             $this->getBundle(),
             $this->getTemplateStrategy(),
-            Format::YAML,
-            self::getOutDir(),
-            false,
+            $format,
+            $targetDir,
+            $overwrite,
             $options,
-            false, //not forge
-            true   //ignore optional deps checks.
+            $forceGeneration
         );
 
         $generator->setServiceManager($this->getServiceManager());
@@ -43,17 +69,23 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
         return [
             [
                 Format::YAML,
+                self::getOutDir(),
                 true,
+                [],
                 $this->getYamlFiles()
             ],
             [
                 Format::XML,
+                self::getOutDir(),
                 true,
+                [],
                 $this->getXmlFiles()
             ],
             [
                 Format::ANNOTATION,
+                self::getOutDir(),
                 true,
+                [],
                 $this->getAnnotatedFiles()
             ]
         ];
@@ -83,43 +115,21 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
     }
 
     /**
-     * @return ArrayCollection|File[]
-     */
-    protected function getFileDependencies()
-    {
-        $managerFile = sprintf(
-            '%s' . DIRECTORY_SEPARATOR .
-            'Entity' . DIRECTORY_SEPARATOR .
-            'Manager' . DIRECTORY_SEPARATOR . '%sManager.php',
-            $this->getOutDir(),
-            'Foo'
-        );
-
-        $formType = sprintf(
-            '%s' . DIRECTORY_SEPARATOR .
-            'Form' . DIRECTORY_SEPARATOR .
-            'Type' . DIRECTORY_SEPARATOR . '%sType.php',
-            $this->getOutDir(),
-            'Foo'
-        );
-
-        return new ArrayCollection([
-            new File($managerFile),
-            new File($formType)
-        ]);
-    }
-
-    /**
      * @return ArrayCollection
      */
     protected function getExpectedMessages()
     {
-        return new ArrayCollection([
-            sprintf(
-                'Make sure to load "%s" in your extension file to enable the new services.',
-                'handlers.' . $this->getGenerator()->getFormat()
-            )
-        ]);
+        if ($this->getGenerator()->getFormat() !== Format::ANNOTATION) {
+            return new ArrayCollection([
+                sprintf(
+                    'Make sure to load "%s" in your extension file to enable the new services.',
+                    'handlers.' . $this->getGenerator()->getFormat()
+                )
+            ]);
+        }
+
+        return new ArrayCollection();
+
     }
 
     /**
@@ -132,10 +142,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'  => self::getStaticData('handler', 'Handler.phps'),
-                    'getFilename'  => 'FooHandler',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Handler',
+                    'getQueue'  => self::getStaticData('handler', 'Handler.phps'),
                     'getRealPath'  => $this->getOutDir() .
                         DIRECTORY_SEPARATOR . 'Handler' . DIRECTORY_SEPARATOR . 'FooHandler.php'
                 ]
@@ -156,10 +163,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('handler', 'AnnotatedHandler.phps'),
-                    'getFilename'  => 'FooHandler',
-                    'getExtension' => 'php',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR . 'Handler',
+                    'getQueue'   => self::getStaticData('handler', 'AnnotatedHandler.phps'),
                     'getRealPath'  => $this->getOutDir() .
                         DIRECTORY_SEPARATOR . 'Handler' . DIRECTORY_SEPARATOR . 'FooHandler.php'
                 ]
@@ -180,11 +184,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('handler', 'handlers.xml'),
-                    'getFilename'  => 'handlers',
-                    'getExtension' => 'xml',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('handler', 'handlers.xml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'handlers.xml'
                 ]
@@ -205,11 +205,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
             ->shouldDeferMissing()
             ->shouldReceive(
                 [
-                    'getContent'   => self::getStaticData('handler', 'handlers.yaml'),
-                    'getFilename'  => 'handlers',
-                    'getExtension' => 'yaml',
-                    'getPath'      => $this->getOutDir() . DIRECTORY_SEPARATOR .
-                        'Resources' . DIRECTORY_SEPARATOR . 'config',
+                    'getQueue'   => self::getStaticData('handler', 'handlers.yaml'),
                     'getRealPath'  => $this->getOutDir() . DIRECTORY_SEPARATOR .
                         'Resources' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'handlers.yaml'
                 ]

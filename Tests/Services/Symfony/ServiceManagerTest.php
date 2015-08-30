@@ -10,7 +10,7 @@ use Tdn\ForgeBundle\Model\ServiceDefinition;
 use Tdn\ForgeBundle\Services\Symfony\ServiceManager;
 
 /**
- * Class serviceManagerTest
+ * Class ServiceManagerTest
  * @package Tdn\ForgeBundle\Tests\Services\Symfony
  */
 class ServiceManagerTest extends \PHPUnit_Framework_TestCase
@@ -25,11 +25,20 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
         $this->serviceManager = new ServiceManager();
     }
 
-    public function testSupportedExtensions()
+    public function testSupportedFormats()
     {
         $this->assertContains(Format::YAML, ServiceManager::getSupportedExtensions());
         $this->assertContains(Format::XML, ServiceManager::getSupportedExtensions());
         $this->assertNotContains(Format::ANNOTATION, ServiceManager::getSupportedExtensions());
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessageRegExp /Invalid format. Expected one of (.*), got (.*)./
+     */
+    public function testNotSupportedFormat()
+    {
+        $this->serviceManager->dump(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'foo.zip');
     }
 
     public function testAddParameter()
@@ -48,6 +57,24 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertContains($definition, $this->serviceManager->getServiceDefinitions());
     }
 
+    public function testDumpExisting()
+    {
+        $file = new File(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'foo.yaml');
+        $file->openFile('w')->fwrite('');
+
+        $this->serviceManager->addParameter(
+            'foo_bar.manager.foo_manager.class',
+            'Foo\BarBundle\Entity\Manager\FooManager'
+        );
+
+        $this->serviceManager->addServiceDefinition($this->getServiceDefinition());
+        $this->assertEquals(
+            self::getStaticData('service', 'service.yaml'),
+            $this->serviceManager->dump($file->getRealPath())
+        );
+        unlink($file->getRealPath());
+    }
+
     /**
      * @param string $format
      * @param string $fileName
@@ -56,7 +83,6 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
      */
     public function testDump($format, $fileName)
     {
-        $file = new File(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $fileName);
         $this->serviceManager->addParameter(
             'foo_bar.manager.foo_manager.class',
             'Foo\BarBundle\Entity\Manager\FooManager'
@@ -64,7 +90,10 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
 
 
         $this->serviceManager->addServiceDefinition($this->getServiceDefinition());
-        $this->assertEquals($format, $this->serviceManager->dump($file));
+        $this->assertEquals(
+            $format,
+            $this->serviceManager->dump(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $fileName)
+        );
     }
 
     /**

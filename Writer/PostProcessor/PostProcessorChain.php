@@ -1,13 +1,13 @@
 <?php
 
-namespace Tdn\ForgeBundle\Template\PostProcessor;
+namespace Tdn\ForgeBundle\Writer\PostProcessor;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Model\File;
 
 /**
  * Class PostProcessorChain
- * @package Tdn\ForgeBundle\Template\PostProcessor
+ * @package Tdn\ForgeBundle\Writer\PostProcessor
  */
 class PostProcessorChain
 {

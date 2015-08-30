@@ -11,11 +11,6 @@ use Tdn\ForgeBundle\Template\Strategy\TemplateStrategyInterface as TemplateStrat
 interface TemplateStrategyInterface
 {
     /**
-     * @param TemplateStrategy $templateStrategy
-     */
-    public function setTemplateStrategy(TemplateStrategy $templateStrategy);
-
-    /**
      * @return TemplateStrategy
      */
     public function getTemplateStrategy();

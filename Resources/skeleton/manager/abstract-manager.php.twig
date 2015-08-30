@@ -97,7 +97,8 @@ abstract class AbstractManager
     /**
      * @param $entity
      */
-    public function delete($entity) {
+    public function delete($entity)
+    {
         $this->em->remove($entity);
         $this->em->flush();
     }
@@ -113,7 +114,8 @@ abstract class AbstractManager
     /**
      * Defining an abstract function with an arbitrary number of parameters is not possible in PHP.
      */
-    public function create() {
+    public function create()
+    {
         throw new \RuntimeException("This method must be implemented in the child class.");
     }
 {% endblock class_body %}

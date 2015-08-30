@@ -26,11 +26,10 @@ trait Formattable
         return $this->format;
     }
 
-
     /**
      * @param string $format
      */
-    public function setFormat($format)
+    protected function setFormat($format)
     {
         if (!in_array($format, $this->getSupportedFormats())) {
             throw new \InvalidArgumentException('Invalid format ' . $format);

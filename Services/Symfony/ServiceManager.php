@@ -103,6 +103,7 @@ class ServiceManager extends AbstractFileUtils
             $loader->load($file->getBasename());
         }
 
+        //Setting to the collections also prevents dupes.
         foreach ($this->parameters as $paramK => $paramV) {
             $this->container->setParameter($paramK, $paramV);
         }

@@ -1,4 +1,4 @@
-api_foo_v1:
+foobar_api_foo:
     resource: '@FooBarBundle/Controller/FooController.php'
     type: rest
-    prefix: v1
+    prefix: api

@@ -3,13 +3,20 @@
 namespace Tdn\ForgeBundle\Generator;
 
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\Exception\NoSuchOptionException;
+use Symfony\Component\OptionsResolver\Exception\OptionDefinitionException;
+use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
+use Tdn\ForgeBundle\Exception\FileQueueOverwriteException;
+use Tdn\ForgeBundle\Exception\PluginInstallException;
 use Tdn\ForgeBundle\Generator\Plugin\PluginInterface;
 use Tdn\ForgeBundle\Template\Strategy\TemplateStrategyInterface;
 use Tdn\ForgeBundle\Traits\Bundled;
+use Tdn\ForgeBundle\Traits\CoreDependency;
 use Tdn\ForgeBundle\Traits\DoctrineMetadata;
 use Tdn\ForgeBundle\Traits\FileDependencies;
 use Tdn\ForgeBundle\Traits\Files;
@@ -42,6 +49,7 @@ abstract class AbstractGenerator implements GeneratorInterface
     use Files;
     use DoctrineMetadata;
     use OptionalDependency;
+    use CoreDependency;
 
     /**
      * @var array|OptionsResolver[]
@@ -64,6 +72,11 @@ abstract class AbstractGenerator implements GeneratorInterface
     private $options;
 
     /**
+     * @var bool
+     */
+    private $forceGeneration;
+
+    /**
      * @var bool;
      */
     private $forge;
@@ -71,7 +84,7 @@ abstract class AbstractGenerator implements GeneratorInterface
     /**
      * @var bool
      */
-    private $ignoreOptionalDeps;
+    private $configured = false;
 
     /**
      * @param ClassMetadata $metadata
@@ -81,8 +94,8 @@ abstract class AbstractGenerator implements GeneratorInterface
      * @param string $targetDir
      * @param bool $overwrite
      * @param array $options
+     * @param bool $forceGeneration
      * @param bool $forge
-     * @param bool $ignoreOptionalDeps
      */
     public function __construct(
         ClassMetadata $metadata,
@@ -92,8 +105,8 @@ abstract class AbstractGenerator implements GeneratorInterface
         $targetDir,
         $overwrite,
         array $options,
-        $forge = false,
-        $ignoreOptionalDeps = false
+        $forceGeneration = false,
+        $forge = false
     ) {
         $this->setMetadata($metadata);
         $this->setBundle($bundle);
@@ -102,8 +115,8 @@ abstract class AbstractGenerator implements GeneratorInterface
         $this->setTargetDirectory($targetDir);
         $this->setOverWrite($overwrite);
         $this->setOptions($options);
+        $this->setForceGeneration($forceGeneration);
         $this->setForge($forge);
-        $this->setIgnoreOptionalDeps($ignoreOptionalDeps);
 
         $this->files            = new ArrayCollection();
         $this->fileDependencies = new ArrayCollection();
@@ -112,7 +125,9 @@ abstract class AbstractGenerator implements GeneratorInterface
     }
 
     /**
-     * @return static
+     * Returns an new configured instance (useful after running generate if want to run again)
+     *
+     * @return GeneratorInterface
      */
     public function reset()
     {
@@ -124,6 +139,7 @@ abstract class AbstractGenerator implements GeneratorInterface
             $this->getTargetDirectory(),
             $this->shouldOverWrite(),
             $this->getOptions(),
+            $this->shouldForceGeneration(),
             $this->isForge()
         );
     }
@@ -141,21 +157,19 @@ abstract class AbstractGenerator implements GeneratorInterface
     }
 
     /**
-     * @param Collection $plugins
+     * Decorate in child class to add dependencies, add
+     *
+     * @return void
      */
-    public function setPlugins(Collection $plugins)
+    protected function configure()
     {
-        $this->plugins = new ArrayCollection();
-
-        foreach ($plugins as $plugin) {
-            $this->addPlugin($plugin);
-        }
+        $this->setConfigured(true);
     }
 
     /**
      * @param PluginInterface $plugin
      */
-    public function addPlugin(PluginInterface $plugin)
+    protected function addPlugin(PluginInterface $plugin)
     {
             $this->plugins->add($plugin);
     }
@@ -163,27 +177,15 @@ abstract class AbstractGenerator implements GeneratorInterface
     /**
      * @return ArrayCollection|PluginInterface[]
      */
-    public function getPlugins()
+    protected function getPlugins()
     {
         return $this->plugins;
     }
 
     /**
-     * @param Collection $messages
-     */
-    public function setMessages(Collection $messages)
-    {
-        $this->messages = new ArrayCollection();
-
-        foreach ($messages as $message) {
-            $this->addMessage($message);
-        }
-    }
-
-    /**
      * @param string $message
      */
-    public function addMessage($message)
+    protected function addMessage($message)
     {
         $this->messages->add((string) $message);
     }
@@ -197,7 +199,30 @@ abstract class AbstractGenerator implements GeneratorInterface
     }
 
     /**
+     * @param File $file
+     */
+    protected function addFile(File $file)
+    {
+        //We'll add what we can, and notify the user of anything that can't be generated.
+        try {
+            if ($this->isFileValid($file)) {
+                $this->files->set($file->getRealPath(), $file);
+            }
+        } catch (FileQueueOverwriteException $e) {
+            $this->addMessage($e->getMessage());
+        }
+    }
+
+    /**
      * @param array $options
+     *
+     * @throws UndefinedOptionsException If an option name is undefined
+     * @throws InvalidOptionsException   If an option doesn't fulfill the
+     *                                   specified validation rules
+     * @throws MissingOptionsException   If a required option is missing
+     * @throws OptionDefinitionException If there is a cyclic dependency between
+     *                                   lazy options and/or normalizers
+     * @throws NoSuchOptionException     If a lazy option reads an unavailable option
      */
     protected function setOptions(array $options)
     {
@@ -214,15 +239,31 @@ abstract class AbstractGenerator implements GeneratorInterface
     /**
      * @return array
      */
-    public function getOptions()
+    protected function getOptions()
     {
         return $this->options;
     }
 
     /**
+     * @param bool $forceGeneration
+     */
+    protected function setForceGeneration($forceGeneration)
+    {
+        $this->forceGeneration = $forceGeneration;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function shouldForceGeneration()
+    {
+        return $this->forceGeneration;
+    }
+
+    /**
      * @param bool $forge
      */
-    public function setForge($forge)
+    protected function setForge($forge)
     {
         $this->forge = $forge;
     }
@@ -230,43 +271,43 @@ abstract class AbstractGenerator implements GeneratorInterface
     /**
      * @return bool
      */
-    public function isForge()
+    protected function isForge()
     {
         return $this->forge;
     }
 
     /**
-     * @param bool $ignoreOptionalDeps
+     * @param bool $configured
      */
-    public function setIgnoreOptionalDeps($ignoreOptionalDeps)
+    protected function setConfigured($configured)
     {
-        $this->ignoreOptionalDeps = $ignoreOptionalDeps;
+        $this->configured = $configured;
     }
 
     /**
      * @return bool
      */
-    public function shouldIgnoreOptionalDeps()
+    protected function isConfigured()
     {
-        return $this->ignoreOptionalDeps;
+        return $this->configured;
     }
 
     /**
      * Ensures the state of the bundle is valid for our generation purposes.
      *
-     * Iterates through file dependencies and generated files to ensure
+     * Iterates through file dependencies and proposed files to ensure
      * rules set against them pass. This should be always called if extending
      * this method with parent::isValid()
      *
      * @throws \RunTimeException
      * @return bool
      */
-    public function isValid()
+    protected function isValid()
     {
         //Check to see if JMSDiExtraBundle exists.
         if ($this->getFormat() == Format::ANNOTATION
             && !class_exists('\\JMS\\DiExtraBundle\\JMSDiExtraBundle')
-            && !$this->shouldIgnoreOptionalDeps()
+            && !$this->shouldForceGeneration()
         ) {
             throw $this->createOptionalDependencyMissingException('Please install JMSDiExtraBundle.');
         }
@@ -285,12 +326,6 @@ abstract class AbstractGenerator implements GeneratorInterface
             }
         }
 
-        foreach ($this->getFiles() as $generatedFile) {
-            if ($this->isFileValid($generatedFile)) {
-                continue;
-            }
-        }
-
         return true;
     }
 
@@ -302,26 +337,17 @@ abstract class AbstractGenerator implements GeneratorInterface
      */
     public function generate()
     {
+        if (!$this->isConfigured()) {
+            $this->configure();
+        }
+
         if ($this->isValid()) {
             foreach ($this->getPlugins() as $plugin) {
                 $this->addFilesFromPlugin($plugin);
             }
-
-            foreach ($this->getFiles() as $file) {
-                //For service files and routing files, the file is regenerated completely. Writing to it
-                //would duplicate content. So let's ensure the file is empty or..just delete it. Or if the overwrite
-                //flag is set then let's go ahead and do it anyways.
-                if (($file->isServiceFile() || $file->isAuxFile() || $this->shouldOverWrite()) && $file->isFile()) {
-                    unlink($file->getRealPath()); //Remove before recreating
-                }
-
-                $this->getTemplateStrategy()->renderFile($file);
-            }
-
-            return $this->getFiles();
         }
 
-        return new ArrayCollection();
+        return $this->getFiles();
     }
 
     /**
@@ -344,7 +370,7 @@ abstract class AbstractGenerator implements GeneratorInterface
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
-        return null;
+        $resolver->setDefaults([]);
     }
 
     /**
@@ -358,8 +384,8 @@ abstract class AbstractGenerator implements GeneratorInterface
      */
     protected function isDependencyValid(File $file)
     {
-        if (!$file->isReadable()) {
-            throw new \RuntimeException(sprintf(
+        if (!$file->isReadable() && !$this->shouldForceGeneration()) {
+            throw $this->createCoreDependencyMissingException(sprintf(
                 'Please ensure the file %s exists and is readable.',
                 $file->getRealPath()
             ));
@@ -375,17 +401,34 @@ abstract class AbstractGenerator implements GeneratorInterface
      * to properly handle that conflict.
      *
      * @param File $file
+     *
      * @return bool
      */
     protected function isFileValid(File $file)
     {
-        if (file_exists($file->getRealPath()) &&
-            (!$this->shouldOverWrite() && !$file->isAuxFile() && !$file->isServiceFile())
-        ) {
-            throw new \RuntimeException(sprintf(
-                'Unable to generate the %s file as it already exists',
-                $file->getRealPath()
-            ));
+        if ($file->isReadable() && !$this->shouldOverWrite()) {
+            switch ($file->getQueueType()) {
+                case File::QUEUE_IF_UPGRADE:
+                    if ($file->isDirty()) {
+                        $this->addMessage(
+                            sprintf(
+                                "%s was upgraded.",
+                                $file->getBasename('.' . $file->getExtension())
+                            )
+                        );
+                        return true;
+                    }
+
+                    return false;
+                case File::QUEUE_ALWAYS:
+                    return true;
+                default:
+                case File::QUEUE_DEFAULT:
+                    throw new FileQueueOverwriteException(sprintf(
+                        'Unable to generate queue for %s as file as it already exists. To overwrite use --overwrite.',
+                        $file->getRealPath()
+                    ));
+            }
         }
 
         return true;
@@ -394,16 +437,30 @@ abstract class AbstractGenerator implements GeneratorInterface
     /**
      * @param PluginInterface $plugin
      *
-     * @throws \RuntimeException If there is an error
+     * @throws PluginInstallException If there is an error
      *
      * @return void
      */
     private function addFilesFromPlugin(PluginInterface $plugin)
     {
-        if ($plugin->isInstallable()) {
-            foreach ($plugin->getFiles() as $file) {
-                $this->addFile($file);
+        try {
+            if ($plugin->isInstallable()) {
+                foreach ($plugin->getFiles() as $file) {
+                    $this->addFile($file);
+                }
             }
+        } catch (PluginInstallException $e) {
+            if ($this->shouldForceGeneration()) {
+                //Generate the files anyways.
+                foreach ($plugin->getFiles() as $file) {
+                    $this->addFile($file);
+                }
+
+                $this->addMessage($e->getMessage());
+                return;
+            }
+
+            throw $e;
         }
     }
 }

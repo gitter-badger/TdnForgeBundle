@@ -4,8 +4,6 @@ namespace Tdn\ForgeBundle\Tests\Command;
 
 use Symfony\Component\Console\Tester\CommandTester;
 use Tdn\ForgeBundle\Command\GenerateControllerCommand;
-use Tdn\ForgeBundle\Generator\ControllerGenerator;
-use Tdn\ForgeBundle\Model\File;
 use \Mockery;
 
 /**
@@ -36,9 +34,23 @@ class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
         $tester = new CommandTester($this->getFullCommand());
         $tester->execute($options);
 
-        foreach ($this->getProcessedFiles() as $generatedFile) {
-            $this->assertRegExp('#' . $generatedFile->getRealPath() . '#', $tester->getDisplay());
+        foreach ($this->getFiles() as $file) {
+            $this->assertRegExp($this->getCommandDisplayMessage($file), $tester->getDisplay());
         }
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @
+     */
+    public function testWontExecute()
+    {
+        $options = [
+            'command'            => $this->getCommand()->getName()
+        ];
+
+        $tester = new CommandTester($this->getFullCommand());
+        $tester->execute($options);
     }
 
     /**
@@ -67,52 +79,8 @@ class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
                 false,
                 true,
                 'FooBarBundle:Foo',
-                'v1'
+                'api'
             ]
         ];
-    }
-
-    /**
-     * @return File[]
-     */
-    protected function getProcessedFiles()
-    {
-        $controllerFileMock = $this->getControllerFileMock();
-
-        return [
-            $controllerFileMock->getRealPath() => $controllerFileMock
-        ];
-    }
-
-    /**
-     * @param File[] $processedFiles
-     *
-     * @return ControllerGenerator
-     */
-    protected function getGenerator(array $processedFiles)
-    {
-        $generator = Mockery::mock('\Tdn\ForgeBundle\Generator\ControllerGenerator');
-
-        return $this->configureGeneratorMock($generator, $processedFiles);
-    }
-
-    /**
-     * @return File
-     */
-    public function getControllerFileMock()
-    {
-        $controllerFileMock = Mockery::mock('\Tdn\ForgeBundle\Model\File');
-        $controllerFileMock
-            ->shouldDeferMissing()
-            ->shouldReceive(
-                [
-                    'getRealPath'  =>  DIRECTORY_SEPARATOR . 'Controller' .
-                        DIRECTORY_SEPARATOR . 'FooController.php'
-                ]
-            )
-            ->zeroOrMoreTimes()
-        ;
-
-        return $controllerFileMock;
     }
 }

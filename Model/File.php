@@ -10,6 +10,10 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 class File extends SplFileInfo
 {
+    const QUEUE_DEFAULT = 0;
+    const QUEUE_IF_UPGRADE = 1;
+    const QUEUE_ALWAYS = 2;
+
     /**
      * @var string
      */
@@ -18,30 +22,43 @@ class File extends SplFileInfo
     /**
      * @var string
      */
-    private $content;
+    private $queue;
 
     /**
-     * @var bool
+     * @var int
      */
-    private $auxFile;
+    private $queueType;
 
-    /**
-     * @var bool
-     */
-    private $serviceFile;
+    public static function getSupportedQueueTypes()
+    {
+        return [
+            self::QUEUE_DEFAULT,
+            self::QUEUE_IF_UPGRADE,
+            self::QUEUE_ALWAYS
+        ];
+    }
 
     /**
      * @param string $file
      * @param string $content
+     * @param int $queueType
      * @param null $relativePath
      * @param null $relativePathName
      */
-    public function __construct($file, $content = null, $relativePath = null, $relativePathName = null)
-    {
+    public function __construct(
+        $file,
+        $content = null,
+        $queueType = self::QUEUE_DEFAULT,
+        $relativePath = null,
+        $relativePathName = null
+    ) {
+        if (!is_int($queueType) || !in_array($queueType, self::getSupportedQueueTypes())) {
+            throw new \InvalidArgumentException('Invalid write type for file.');
+        }
+
         $this->fileLocation = $file;
-        $this->content = $content;
-        $this->auxFile = false;
-        $this->serviceFile = false;
+        $this->queue = $content;
+        $this->queueType = $queueType;
 
         parent::__construct($file, $relativePath, $relativePathName);
     }
@@ -49,44 +66,17 @@ class File extends SplFileInfo
     /**
      * @return string
      */
-    public function getContent()
+    public function getQueue()
     {
-        return $this->content;
+        return $this->queue;
     }
 
     /**
-     * @param  bool $auxFile
-     * @return $this
+     * @return int
      */
-    public function setAuxFile($auxFile)
+    public function getQueueType()
     {
-        $this->auxFile = $auxFile;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAuxFile()
-    {
-        return $this->auxFile;
-    }
-
-    /**
-     * @param bool $serviceFile
-     */
-    public function setServiceFile($serviceFile)
-    {
-        $this->serviceFile = $serviceFile;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isServiceFile()
-    {
-        return $this->serviceFile;
+        return $this->queueType;
     }
 
     /**
@@ -97,10 +87,10 @@ class File extends SplFileInfo
         try {
             $currentContents = parent::getContents();
         } catch (\RuntimeException $e) {
-            $currentContents = '';
+            $currentContents = null;
         }
 
-        return ($this->getContent() != $currentContents);
+        return ($this->getQueue() !== $currentContents);
     }
 
     /**

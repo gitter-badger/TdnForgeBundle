@@ -10,11 +10,6 @@ interface FormattableInterface
     public function getSupportedFormats();
 
     /**
-     * @param $format
-     */
-    public function setFormat($format);
-
-    /**
      * @return string
      */
     public function getFormat();
