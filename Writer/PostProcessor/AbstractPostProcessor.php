@@ -2,7 +2,6 @@
 
 namespace Tdn\ForgeBundle\Writer\PostProcessor;
 
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Finder\Finder;
 use Tdn\ForgeBundle\Exception\DirectoryNotFoundException;
 use \SplFileInfo;

@@ -2,7 +2,6 @@
 
 namespace Tdn\ForgeBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\Builder\ScalarNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 

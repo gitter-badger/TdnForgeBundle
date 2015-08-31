@@ -51,7 +51,7 @@ class TwigTemplateStrategy extends AbstractTemplateStrategy implements TemplateS
      */
     protected function getTwigFilters()
     {
-        if ($this->twigFilters == null) {
+        if ($this->twigFilters === null) {
             $this->twigFilters = [
                 new \Twig_SimpleFilter(
                     'pluralize',

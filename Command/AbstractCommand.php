@@ -3,7 +3,6 @@
 namespace Tdn\ForgeBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Sensio\Bundle\GeneratorBundle\Command\Helper\QuestionHelper;
 use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;

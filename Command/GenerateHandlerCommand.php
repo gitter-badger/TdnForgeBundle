@@ -3,7 +3,6 @@
 namespace Tdn\ForgeBundle\Command;
 
 use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
-use Tdn\ForgeBundle\Generator\Factory\HandlerGeneratorFactory;
 
 /**
  * Class GenerateHandlerCommand

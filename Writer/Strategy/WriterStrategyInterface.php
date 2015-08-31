@@ -2,7 +2,6 @@
 
 namespace Tdn\ForgeBundle\Writer\Strategy;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Model\File;
 
 /**
