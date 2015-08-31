@@ -46,7 +46,7 @@ class GenerateControllerCommandTest extends AbstractGeneratorCommandTest
     public function testWontExecute()
     {
         $options = [
-            'command'            => $this->getCommand()->getName()
+            'command' => $this->getCommand()->getName()
         ];
 
         $tester = new CommandTester($this->getFullCommand());

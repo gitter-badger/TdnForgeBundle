@@ -22,9 +22,9 @@ use Tdn\ForgeBundle\Traits\Formattable;
 use Tdn\ForgeBundle\Traits\OptionalDependency;
 use Tdn\ForgeBundle\Traits\TargetedOutput;
 use Tdn\ForgeBundle\Traits\OverWritable;
-use Tdn\ForgeBundle\Traits\TemplateStrategy;
+use Tdn\ForgeBundle\Traits\WithTemplateStrategy;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 
 /**
  * Abstract Class AbstractGenerator
@@ -42,7 +42,7 @@ abstract class AbstractGenerator implements GeneratorInterface
     use Bundled;
     use TargetedOutput;
     use Formattable;
-    use TemplateStrategy;
+    use WithTemplateStrategy;
     use FileDependencies;
     use Files;
     use DoctrineMetadata;
@@ -142,9 +142,9 @@ abstract class AbstractGenerator implements GeneratorInterface
     public function getSupportedFormats()
     {
         return [
-            Format::YAML,
-            Format::XML,
-            Format::ANNOTATION
+            FormatInterface::YAML,
+            FormatInterface::XML,
+            FormatInterface::ANNOTATION
         ];
     }
 
@@ -281,7 +281,7 @@ abstract class AbstractGenerator implements GeneratorInterface
     protected function isValid()
     {
         //Check to see if JMSDiExtraBundle exists.
-        if ($this->getFormat() == Format::ANNOTATION
+        if ($this->getFormat() == FormatInterface::ANNOTATION
             && !class_exists('\\JMS\\DiExtraBundle\\JMSDiExtraBundle')
             && !$this->shouldForceGeneration()
         ) {
@@ -375,7 +375,7 @@ abstract class AbstractGenerator implements GeneratorInterface
                     if ($file->isDirty()) {
                         $this->addMessage(
                             sprintf(
-                                "%s was upgraded.",
+                                '%s was upgraded.',
                                 $file->getBasename('.' . $file->getExtension())
                             )
                         );
@@ -385,8 +385,8 @@ abstract class AbstractGenerator implements GeneratorInterface
                     return false;
                 case File::QUEUE_ALWAYS:
                     return true;
-                default:
                 case File::QUEUE_DEFAULT:
+                default:
                     throw new FileQueueOverwriteException(sprintf(
                         'Unable to generate queue for %s as file as it already exists. To overwrite use --overwrite.',
                         $file->getRealPath()

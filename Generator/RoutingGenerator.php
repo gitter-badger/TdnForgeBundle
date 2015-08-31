@@ -5,7 +5,7 @@ namespace Tdn\ForgeBundle\Generator;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Tdn\ForgeBundle\Model\File;
 use Tdn\PhpTypes\Type\String;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\RouteDefinition;
 use Tdn\ForgeBundle\Services\Symfony\RoutingManager;
 
@@ -15,8 +15,8 @@ use Tdn\ForgeBundle\Services\Symfony\RoutingManager;
  */
 class RoutingGenerator extends AbstractGenerator
 {
-    const TYPE = "rest";
-    const API_PREFIX = "api_";
+    const TYPE = 'rest';
+    const API_PREFIX = 'api_';
     const DEFAULT_ROUTING_FILE = 'routing';
 
     /**
@@ -70,7 +70,7 @@ class RoutingGenerator extends AbstractGenerator
         $this->addRoutingFile();
         $this->addControllerDependency();
 
-        if ($this->getFormat() == Format::ANNOTATION && !$this->isForge()) {
+        if ($this->getFormat() == FormatInterface::ANNOTATION && !$this->isForge()) {
             $this->addMessage(
                 sprintf(
                     'It is recommended that you run the %s command with the --format=annotation flag.',
@@ -126,7 +126,7 @@ class RoutingGenerator extends AbstractGenerator
             DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . '%s.%s',
             ($this->getTargetDirectory()) ?: $this->getBundle()->getPath(),
             $this->getRoutingFile(),
-            ($this->getFormat() == Format::ANNOTATION) ? Format::YAML : $this->getFormat()
+            ($this->getFormat() == FormatInterface::ANNOTATION) ? FormatInterface::YAML : $this->getFormat()
         );
 
         $routingFile = new File(
@@ -147,12 +147,12 @@ class RoutingGenerator extends AbstractGenerator
         $routeDefinition = new RouteDefinition(
             $this->createRouteId(),
             sprintf(
-                "@%s/Controller/%sController.php",
+                '@%s/Controller/%sController.php',
                 $this->getBundle()->getName(),
                 $this->getEntity()
             ),
-            ($this->getPrefix() && $this->getFormat() !== Format::ANNOTATION) ?
-            (string) String::create($this->getPrefix())->replace('/', '') : "",
+            ($this->getPrefix() && $this->getFormat() !== FormatInterface::ANNOTATION) ?
+            (string) String::create($this->getPrefix())->replace('/', '') : '',
             self::TYPE
         );
 
@@ -169,7 +169,7 @@ class RoutingGenerator extends AbstractGenerator
     {
         return (string) String::create($this->getRouteNamespace())
             ->ensureRight(
-                ($this->getPrefix() && $this->getFormat() !== Format::ANNOTATION) ?
+                ($this->getPrefix() && $this->getFormat() !== FormatInterface::ANNOTATION) ?
                 (string) String::create($this->getPrefix())->replace('/', '')->ensureLeft('_') : ''
             )
             ->ensureRight(

@@ -37,7 +37,7 @@ class PsrPostProcessor extends AbstractPostProcessor implements PostProcessorInt
     {
         return new Process(
             sprintf(
-                "%s php-cs-fixer fix %s --level=psr2",
+                '%s php-cs-fixer fix %s --level=psr2',
                 PHP_BINARY,
                 $file->getRealPath()
             ),
@@ -49,7 +49,7 @@ class PsrPostProcessor extends AbstractPostProcessor implements PostProcessorInt
     {
         return new Process(
             sprintf(
-                "%s phpcs --standard=PSR2 %s",
+                '%s phpcs --standard=PSR2 %s',
                 PHP_BINARY,
                 $file->getRealPath()
             ),
@@ -69,17 +69,16 @@ class PsrPostProcessor extends AbstractPostProcessor implements PostProcessorInt
      * @param SplFileInfo $file
      *
      * @throw ProcessFailedException If the process ran and it failed.
-     * @return bool
      */
     public function process(SplFileInfo $file)
     {
         if (!$this->supports($file)) {
-            return null;
+            return;
         }
 
         if (!$file->isFile()) {
             throw new FileNotFoundException(sprintf(
-                "%s was not found.",
+                '%s was not found.',
                 $file->getRealPath()
             ));
         }
@@ -98,7 +97,5 @@ class PsrPostProcessor extends AbstractPostProcessor implements PostProcessorInt
 
         $check = $this->getCheckerProcess($file);
         $check->mustRun();
-
-        return true;
     }
 }

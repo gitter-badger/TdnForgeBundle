@@ -2,7 +2,7 @@
 
 namespace Tdn\ForgeBundle\Tests\Services\Symfony\Routing\Loader;
 
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Services\Symfony\Routing\Loader\StandardLoaderFactory;
 
 /**
@@ -25,7 +25,7 @@ class StandardLoaderFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertInstanceOf(
             '\Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\YamlLoader',
-            $this->standardLoaderFactory->createLoader(Format::YAML, sys_get_temp_dir() . 'foo.yml')
+            $this->standardLoaderFactory->createLoader(FormatInterface::YAML, sys_get_temp_dir() . 'foo.yml')
         );
     }
 
@@ -33,7 +33,7 @@ class StandardLoaderFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertInstanceOf(
             '\Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\XmlLoader',
-            $this->standardLoaderFactory->createLoader(Format::XML, sys_get_temp_dir() . 'foo.xml')
+            $this->standardLoaderFactory->createLoader(FormatInterface::XML, sys_get_temp_dir() . 'foo.xml')
         );
     }
 

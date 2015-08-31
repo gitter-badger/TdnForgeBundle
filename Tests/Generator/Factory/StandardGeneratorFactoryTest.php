@@ -4,7 +4,7 @@ namespace Tdn\ForgeBundle\Tests\Generator\Factory;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Tdn\ForgeBundle\Generator\Factory\GeneratorFactoryInterface;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Generator\ServiceGeneratorInterface;
 use Tdn\ForgeBundle\Generator\Factory\StandardGeneratorFactory;
 use Tdn\ForgeBundle\Tests\Traits\BundleMock;
@@ -73,7 +73,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
             'BadGeneratorType',
             $this->getMetadata(),
             $this->getBundle(),
-            Format::YAML,
+            FormatInterface::YAML,
             '',
             false,
             []
@@ -93,7 +93,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
                 GeneratorFactoryInterface::TYPE_CONTROLLER_GENERATOR,
                 $this->getMetadata(),
                 $this->getBundle(),
-                Format::YAML,
+                FormatInterface::YAML,
                 $this->outDir,
                 false,
                 []
@@ -114,7 +114,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
                 GeneratorFactoryInterface::TYPE_FORM_GENERATOR,
                 $this->getMetadata(),
                 $this->getBundle(),
-                Format::YAML,
+                FormatInterface::YAML,
                 '',
                 false,
                 []
@@ -134,7 +134,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
             GeneratorFactoryInterface::TYPE_HANDLER_GENERATOR,
             $this->getMetadata(),
             $this->getBundle(),
-            Format::YAML,
+            FormatInterface::YAML,
             '',
             false,
             []
@@ -156,7 +156,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
             GeneratorFactoryInterface::TYPE_MANAGER_GENERATOR,
             $this->getMetadata(),
             $this->getBundle(),
-            Format::YAML,
+            FormatInterface::YAML,
             '',
             false,
             []
@@ -179,7 +179,7 @@ class StandardGeneratorFactoryTest extends \PHPUnit_Framework_TestCase
                 GeneratorFactoryInterface::TYPE_ROUTING_GENERATOR,
                 $this->getMetadata(),
                 $this->getBundle(),
-                Format::YAML,
+                FormatInterface::YAML,
                 '',
                 false,
                 []

@@ -40,10 +40,10 @@ class File extends SplFileInfo
 
     /**
      * @param string $file
-     * @param string $content
-     * @param int $queueType
-     * @param null $relativePath
-     * @param null $relativePathName
+     * @param string|null $content
+     * @param integer|null $queueType
+     * @param string|null $relativePath
+     * @param string|null $relativePathName
      */
     public function __construct(
         $file,
@@ -85,7 +85,7 @@ class File extends SplFileInfo
     public function isDirty()
     {
         try {
-            $currentContents = parent::getContents();
+            $currentContents = $this->getContents();
         } catch (\RuntimeException $e) {
             $currentContents = null;
         }

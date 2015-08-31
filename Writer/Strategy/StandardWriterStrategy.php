@@ -40,6 +40,7 @@ class StandardWriterStrategy implements WriterStrategyInterface
         }
 
         if ($target->isFile()) {
+            //We don't care
             @unlink($target->getRealPath());
         }
 

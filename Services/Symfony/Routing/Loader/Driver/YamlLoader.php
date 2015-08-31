@@ -33,6 +33,7 @@ class YamlLoader extends AbstractLoader implements LoaderInterface
         $yamlParser = new Yaml();
 
         $contents = file_get_contents($path);
+
         return ($contents !== false && !empty($contents)) ? $yamlParser->parse($contents) : [];
     }
 

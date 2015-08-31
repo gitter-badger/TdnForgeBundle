@@ -6,7 +6,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Tdn\PhpTypes\Type\String;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\ServiceDefinition;
 
 /**
@@ -37,7 +37,7 @@ class ManagerGenerator extends AbstractServiceGenerator
         $this->addManagerFile($path, $entityConstructor);
         $this->addManagerInterfaceFile($path, $entityConstructor);
 
-        if ($this->getFormat() !== Format::ANNOTATION) {
+        if ($this->getFormat() !== FormatInterface::ANNOTATION) {
             $this->addServiceFile('managers');
         }
 

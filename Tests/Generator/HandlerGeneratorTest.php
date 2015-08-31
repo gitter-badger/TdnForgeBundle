@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Generator\HandlerGenerator;
 use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 
 /**
  * Class HandlerGeneratorTest
@@ -22,7 +22,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
     public function testDependencyMissing()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],
@@ -42,7 +42,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
      * @return HandlerGenerator
      */
     protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],
@@ -68,21 +68,21 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
     {
         return [
             [
-                Format::YAML,
+                FormatInterface::YAML,
                 self::getOutDir(),
                 true,
                 [],
                 $this->getYamlFiles()
             ],
             [
-                Format::XML,
+                FormatInterface::XML,
                 self::getOutDir(),
                 true,
                 [],
                 $this->getXmlFiles()
             ],
             [
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 true,
                 [],
@@ -119,7 +119,7 @@ class HandlerGeneratorTest extends AbstractServiceGeneratorTest
      */
     protected function getExpectedMessages()
     {
-        if ($this->getGenerator()->getFormat() !== Format::ANNOTATION) {
+        if ($this->getGenerator()->getFormat() !== FormatInterface::ANNOTATION) {
             return new ArrayCollection([
                 sprintf(
                     'Make sure to load "%s" in your extension file to enable the new services.',

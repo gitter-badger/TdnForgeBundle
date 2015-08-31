@@ -35,7 +35,7 @@ class PsrPostProcessorTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $binDir = (new \SplFileInfo((new \ReflectionClass(new TdnForgeBundle()))->getFileName()))->getPath() .
-            DIRECTORY_SEPARATOR . 'bin'
+            DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin'
         ;
         $this->postProcessor = new PsrPostProcessor($binDir);
         $this->outDir        = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'forge-bundle';
@@ -90,14 +90,13 @@ class PsrPostProcessorTest extends \PHPUnit_Framework_TestCase
     public function testNoSupports()
     {
         $this->assertFalse($this->postProcessor->supports($this->getFile('', false, 'foo')));
-        $this->assertNull($this->postProcessor->process($this->getFile('', false, 'foo')));
     }
 
     public function testProcess()
     {
         $file = new SplFileInfo($this->outDir . DIRECTORY_SEPARATOR . 'ProcessedFile.php', null, null);
         $file->openFile('w')->fwrite(self::getStaticData('postprocessor', 'UnprocessedPhpFile.phps'));
-        $this->assertTrue($this->postProcessor->process($file));
+        $this->postProcessor->process($file);
         $this->assertEquals(
             self::getStaticData('postprocessor', 'ProcessedPhpFile.phps'),
             $file->getContents()

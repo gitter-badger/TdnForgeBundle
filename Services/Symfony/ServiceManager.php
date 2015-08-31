@@ -19,12 +19,17 @@ class ServiceManager extends AbstractFileUtils
     /**
      * @var ArrayCollection
      */
-    protected $parameters;
+    private $parameters;
 
     /**
      * @var ArrayCollection|ServiceDefinition[]
      */
-    protected $serviceDefinitions;
+    private $serviceDefinitions;
+
+    /**
+     * @var ContainerBuilder
+     */
+    private $container;
 
     public function __construct()
     {

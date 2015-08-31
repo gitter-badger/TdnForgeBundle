@@ -4,7 +4,7 @@ namespace Tdn\ForgeBundle\Tests\Generator;
 
 use Tdn\ForgeBundle\Generator\FormGenerator;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use \Mockery;
 
 /**
@@ -21,7 +21,7 @@ class FormGeneratorTest extends AbstractGeneratorTest
     public function testDependencyMissing()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],
@@ -35,21 +35,21 @@ class FormGeneratorTest extends AbstractGeneratorTest
     {
         return [
             [
-                Format::YAML,
+                FormatInterface::YAML,
                 self::getOutDir(),
                 true,
                 [],
                 $this->getProcessedFiles()
             ],
             [
-                Format::XML,
+                FormatInterface::XML,
                 self::getOutDir(),
                 true,
                 [],
                 $this->getProcessedFiles()
             ],
             [
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 true,
                 [],
@@ -83,7 +83,7 @@ class FormGeneratorTest extends AbstractGeneratorTest
      * @return FormGenerator
      */
     protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],

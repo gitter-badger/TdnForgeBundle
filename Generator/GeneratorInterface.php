@@ -9,7 +9,7 @@ use Tdn\ForgeBundle\Traits\FormattableInterface;
 use Tdn\ForgeBundle\Model\File;
 use Tdn\ForgeBundle\Traits\OverWritableInterface;
 use Tdn\ForgeBundle\Traits\TargetedOutputInterface;
-use Tdn\ForgeBundle\Traits\TemplateStrategyInterface;
+use Tdn\ForgeBundle\Traits\HasTemplateStrategyInterface;
 
 /**
  * Interface GeneratorInterface
@@ -18,7 +18,7 @@ use Tdn\ForgeBundle\Traits\TemplateStrategyInterface;
 interface GeneratorInterface extends
     DoctrineMetadataInterface,
     BundledInterface,
-    TemplateStrategyInterface,
+    HasTemplateStrategyInterface,
     FormattableInterface,
     TargetedOutputInterface,
     OverWritableInterface

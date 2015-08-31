@@ -49,7 +49,7 @@ class XmlLoader extends AbstractLoader implements LoaderInterface
 
             throw new InvalidXmlException(
                 sprintf(
-                    "Error(s) parsing file: %s.",
+                    'Error(s) parsing file: %s.',
                     implode(', ', $errors->toArray())
                 )
             );

@@ -7,7 +7,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Generator\GeneratorInterface;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Tests\Traits\BundleMock;
 use Tdn\ForgeBundle\Tests\Traits\MetadataMock;
 use Tdn\ForgeBundle\Tests\Traits\StaticData;
@@ -54,7 +54,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
      * @return GeneratorInterface
      */
     abstract protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],
@@ -99,7 +99,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
     public function testState()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             []
@@ -109,7 +109,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
         $this->assertEquals($this->getBundle(), $generator->getBundle());
         $this->assertEquals($this->getMetadata(), $generator->getMetadata());
         $this->assertEquals($this->getOutDir(), $generator->getTargetDirectory());
-        $this->assertEquals(Format::YAML, $generator->getFormat());
+        $this->assertEquals(FormatInterface::YAML, $generator->getFormat());
         $this->assertEquals(self::getOutDir(), $generator->getTargetDirectory());
         $this->assertTrue($generator->shouldOverWrite());
     }
@@ -152,7 +152,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
     public function testMissingOptionalDependency()
     {
         $generator = $this->getGenerator(
-            Format::ANNOTATION,
+            FormatInterface::ANNOTATION,
             self::getOutDir(),
             true,
             []
@@ -164,7 +164,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
     public function testMessages()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             [],
@@ -179,7 +179,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
     public function testWillNotGenerateDupes()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],
@@ -194,7 +194,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
     public function testWillNotGenerateExisting()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],
@@ -224,7 +224,7 @@ abstract class AbstractGeneratorTest extends \PHPUnit_Framework_TestCase impleme
     public function testWillNotGenerateIfNoUpgrade()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],

@@ -14,8 +14,6 @@ interface PostProcessorInterface
     /**
      * @param SplFileInfo $file
      * @throws ProcessFailedException
-     *
-     * @return string The contents of the file after processing.
      */
     public function process(SplFileInfo $file);
 

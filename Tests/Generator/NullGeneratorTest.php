@@ -4,7 +4,7 @@ namespace Tdn\ForgeBundle\Tests\Generator;
 
 use Tdn\ForgeBundle\Generator\GeneratorInterface;
 use Tdn\ForgeBundle\Generator\NullGenerator;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 
 /**
  * Class NullGeneratorTest
@@ -22,7 +22,7 @@ class NullGeneratorTest extends AbstractGeneratorTest
      * @return GeneratorInterface
      */
     protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],
@@ -46,21 +46,21 @@ class NullGeneratorTest extends AbstractGeneratorTest
     {
         return [
             [
-                Format::YAML,
+                FormatInterface::YAML,
                 self::getOutDir(),
                 false,
                 [],
                 []
             ],
             [
-                Format::XML,
+                FormatInterface::XML,
                 self::getOutDir(),
                 false,
                 [],
                 []
             ],
             [
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 false,
                 [],

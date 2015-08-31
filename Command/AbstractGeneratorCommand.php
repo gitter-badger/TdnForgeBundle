@@ -2,13 +2,15 @@
 
 namespace Tdn\ForgeBundle\Command;
 
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Sensio\Bundle\GeneratorBundle\Command\Validators;
 use Doctrine\Common\Collections\ArrayCollection;
-use Tdn\ForgeBundle\Model\Format;
+use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\File;
 
 /**
@@ -32,7 +34,7 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
     /**
      * @var string
      */
-    const DEFAULT_FORMAT = Format::YAML;
+    const DEFAULT_FORMAT = FormatInterface::YAML;
 
     /**
      * @var array
@@ -179,11 +181,15 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
         $overWrite = $input->getOption('overwrite') ? true : false;
         $targetDirectory = $input->hasOption('target-directory') ? $input->getOption('target-directory') : null;
         $format = $input->getOption('format');
-        $format = ($format == Format::YML) ? Format::YAML : $format; //normalize.
+        $format = ($format == FormatInterface::YML) ? FormatInterface::YAML : $format; //normalize.
         $this->files = new ArrayCollection();
 
         foreach ($entities as $entity) {
             list($bundle, $entity) = $this->parseShortcutNotation($entity);
+
+            if (!$bundle instanceof BundleInterface) {
+                throw new \RuntimeException('Invalid bundle.');
+            }
 
             $generator = $this->getGeneratorFactory()->create(
                 $this->getType(),
@@ -201,7 +207,7 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
             }
 
             $generator->getMessages()->forAll(function ($message) use ($output) {
-                $output->writeln("<info>$message</info>");
+                $output->writeln(sprintf('<info>%s</info>', $message));
             });
         }
 
@@ -218,7 +224,7 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
     {
         $files = $this->getFiles();
         if ($this->shouldContinue($input, $output, $files)) {
-            $output->writeln("<info>Generating files...this could take a while.</info>");
+            $output->writeln('<info>Generating files...this could take a while.</info>');
             foreach ($files as $file) {
                 $this->getWriterStrategy()->writeFile($file);
                 $output->writeln(sprintf(
@@ -243,11 +249,11 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
      *
      * @param InputInterface  $input
      * @param OutputInterface $output
-     * @param ArrayCollection $files
+     * @param Collection $files
      *
      * @return bool
      */
-    protected function shouldContinue(InputInterface $input, OutputInterface $output, ArrayCollection $files)
+    protected function shouldContinue(InputInterface $input, OutputInterface $output, Collection $files)
     {
         if ($input->isInteractive()) {
             $question = new ConfirmationQuestion(
@@ -273,7 +279,7 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
      *
      * @param string $shortcut
      *
-     * @return array containing two elements [0] => BundleInterface, [1] => (string) Entity
+     * @return array<BundleInterface|string>
      */
     private function parseShortcutNotation($shortcut)
     {
@@ -295,7 +301,7 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
     /**
      * @param InputInterface $input
      *
-     * @return ArrayCollection|string
+     * @return ArrayCollection
      */
     private function resolveEntities(InputInterface $input)
     {

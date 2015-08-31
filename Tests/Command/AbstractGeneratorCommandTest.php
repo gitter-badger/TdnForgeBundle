@@ -55,6 +55,7 @@ abstract class AbstractGeneratorCommandTest extends GenerateCommandTest
     protected function getContainer()
     {
         $container = parent::getContainer();
+
         $container->set('tdn_forge.doctrine.entity.helper', $this->getEntityHelper());
         $container->set('tdn_forge.generator.factory.standard_generator_factory', $this->getGeneratorFactory());
         $container->set('tdn_forge.writer.strategy.default', $this->getWriterStrategy());

@@ -3,13 +3,13 @@
 namespace Tdn\ForgeBundle\Model;
 
 /**
- * Interface Format
+ * Interface FormatInterface
  *
  * This will be broken down into a factory of sorts.
  *
  * @package Tdn\ForgeBundle\Model
  */
-interface Format
+interface FormatInterface
 {
     const XML = 'xml';
     const YAML = 'yaml';

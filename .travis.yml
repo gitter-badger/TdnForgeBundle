@@ -15,17 +15,17 @@ cache:
     - $HOME/.composer/cache
 
 install:
-  - composer install --no-interaction
+  - composer install --no-interaction --prefer-source
 
 script:
-  - bin/phpcs --standard=.phpcs.xml
+  - vendor/bin/phpcs --standard=.phpcs.xml
   - mkdir -p build/logs
-  - bin/phpunit -c phpunit.xml.dist
+  - vendor/bin/phpunit -c phpunit.xml.dist
   - wget https://scrutinizer-ci.com/ocular.phar
   - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
 
 after_script:
-  - bin/coveralls
+  - vendor/bin/coveralls
 
 notifications:
   irc: "chat.freenode.net#thedevnetwork"

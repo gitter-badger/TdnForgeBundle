@@ -4,7 +4,6 @@
 [![License][license shield]][packagist page]
 [![Latest Stable Version][latest version shield]][packagist page]
 [![Scrutinizer Code Quality][scrutinizer score shield]][scrutinizer page]
-[![Scrutinizer Code Coverage][scrutinizer coverage shield]][scrutinizer page]
 [![Travis][travis build shield]][travis page]
 [![Coverage Status][coveralls badge]][coveralls page]
 [![Codacy][codacy shield]][codacy page]
@@ -145,16 +144,15 @@ Please check out this [scrutinizer documentation page] explaining how commiting 
 [scrutinizer score shield]: https://img.shields.io/scrutinizer/g/vpassapera/TdnForgeBundle.svg?style=flat-square
 [scrutinizer page]: https://scrutinizer-ci.com/g/vpassapera/TdnForgeBundle
 [scrutinizer documentation page]: https://scrutinizer-ci.com/docs/tools/php/php-analyzer/guides/composer_dependencies
-[scrutinizer coverage shield]: https://img.shields.io/scrutinizer/coverage/g/vpassapera/TdnForgeBundle.svg?style=flat-square
 [travis build shield]: https://img.shields.io/travis/vpassapera/TdnForgeBundle.svg?style=flat-square
 [travis page]: https://travis-ci.org/vpassapera/TdnForgeBundle
-[coveralls badge]: https://coveralls.io/repos/vpassapera/TdnForgeBundle/badge.svg?branch=develop&service=github
+[coveralls badge]: https://img.shields.io/coveralls/vpassapera/TdnForgeBundle/develop.svg?style=flat-square
 [coveralls page]: https://coveralls.io/github/vpassapera/TdnForgeBundle?branch=develop
 [codacy shield]: https://img.shields.io/codacy/9a9be3063c8d44ca8709497469e3d097.svg?style=flat-square
 [codacy page]: https://www.codacy.com/public/vpassapera/TdnForgeBundle
-[sensio shield]: https://insight.sensiolabs.com/projects/84a6a21c-83e0-4f21-a66f-838d1ddc5e07/mini.png
-[sensio page]: https://insight.sensiolabs.com/projects/84a6a21c-83e0-4f21-a66f-838d1ddc5e07
-[forge icon]: https://raw.githubusercontent.com/vpassapera/Aux/master/images/forge.png
+[sensio shield]: https://insight.sensiolabs.com/projects/06cbb1f1-948c-442d-97da-06836bb6068d/mini.png
+[sensio page]: https://insight.sensiolabs.com/projects/06cbb1f1-948c-442d-97da-06836bb6068d
+[forge icon]: https://raw.githubusercontent.com/TheDevNetwork/Aux/master/images/forge.png
 [milestone shield]: https://img.shields.io/badge/milestone-1.0.0-green.svg
 [symfony 2]: http://symfony.com
 [note]: https://img.shields.io/badge/note-*-orange.svg

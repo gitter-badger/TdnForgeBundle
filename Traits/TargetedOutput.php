@@ -22,7 +22,7 @@ trait TargetedOutput
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getTargetDirectory()
     {

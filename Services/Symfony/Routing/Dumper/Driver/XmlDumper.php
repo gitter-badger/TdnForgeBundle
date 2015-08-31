@@ -27,7 +27,7 @@ class XmlDumper extends AbstractDumper implements DumperInterface
         $routesDoc->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
         $routesDoc->setAttribute(
             'xsi:schemaLocation',
-            "http://friendsofsymfony.github.com/schema/rest " .
+            'http://friendsofsymfony.github.com/schema/rest ' .
             'http://friendsofsymfony.github.com/schema/rest/routing-1.0.xsd'
         );
 

@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Tdn\ForgeBundle\Generator\ManagerGenerator;
 use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 
 /**
  * Class ManagerGeneratorTest
@@ -18,42 +18,42 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
     {
         return [
             [
-                Format::YAML,
+                FormatInterface::YAML,
                 self::getOutDir(),
                 false,
                 [],
                 $this->getYamlFiles()
             ],
             [
-                Format::XML,
+                FormatInterface::XML,
                 self::getOutDir(),
                 false,
                 [],
                 $this->getXmlFiles()
             ],
             [
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 false,
                 [],
                 $this->getAnnotatedFiles()
             ],
             [
-                Format::YAML,
+                FormatInterface::YAML,
                 self::getOutDir(),
                 true,
                 [],
                 $this->getYamlFiles()
             ],
             [
-                Format::XML,
+                FormatInterface::XML,
                 self::getOutDir(),
                 true,
                 [],
                 $this->getXmlFiles()
             ],
             [
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 true,
                 [],
@@ -72,7 +72,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
      * @return ManagerGenerator
      */
     protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],
@@ -99,7 +99,7 @@ class ManagerGeneratorTest extends AbstractServiceGeneratorTest
      */
     protected function getExpectedMessages()
     {
-        if ($this->getGenerator()->getFormat() !== Format::ANNOTATION) {
+        if ($this->getGenerator()->getFormat() !== FormatInterface::ANNOTATION) {
             return new ArrayCollection([
                 sprintf(
                     'Make sure to load "%s" in your extension file to enable the new services.',

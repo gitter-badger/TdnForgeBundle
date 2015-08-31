@@ -4,7 +4,7 @@ namespace Tdn\ForgeBundle\Services\Symfony\Routing\Loader;
 
 use Symfony\Component\Config\FileLocator;
 use Tuck\ConverterBundle\Exception\UnknownFormatException;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\LoaderInterface;
 
 /**
@@ -14,8 +14,8 @@ use Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\LoaderInterface;
 class StandardLoaderFactory implements LoaderFactoryInterface
 {
     protected $loaderMap = [
-        Format::XML  => '\Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\XmlLoader',
-        Format::YAML => '\Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\YamlLoader'
+        FormatInterface::XML  => '\Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\XmlLoader',
+        FormatInterface::YAML => '\Tdn\ForgeBundle\Services\Symfony\Routing\Loader\Driver\YamlLoader'
     ];
 
     /**

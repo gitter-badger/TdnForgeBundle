@@ -3,7 +3,7 @@
 namespace Tdn\ForgeBundle\Services\Symfony;
 
 use Symfony\Component\Finder\SplFileInfo;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 
 /**
  * Class AbstractFileUtils
@@ -17,8 +17,8 @@ abstract class AbstractFileUtils
     public static function getSupportedExtensions()
     {
         return [
-            Format::XML,
-            Format::YAML
+            FormatInterface::XML,
+            FormatInterface::YAML
         ];
     }
 

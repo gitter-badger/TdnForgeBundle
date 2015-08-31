@@ -2,9 +2,7 @@
 
 namespace Tdn\ForgeBundle\Generator;
 
-use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Tdn\ForgeBundle\Generator\Plugin\Controller\TestPlugin;
 use Tdn\PhpTypes\Type\String;
 use Tdn\ForgeBundle\Model\File;
 
@@ -37,15 +35,11 @@ class ControllerGenerator extends AbstractGenerator
     /**
      * Sets up a controller based on an entity.
      * Sets up controller test files if flag is set.
-     *
-     * @return $this
      */
     protected function configure()
     {
         $this->addHandlerDependency();
         $this->addController();
-        if ($this->supportsTests()) {
-        }
 
         parent::configure();
     }

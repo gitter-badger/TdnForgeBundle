@@ -5,7 +5,7 @@ namespace Tdn\ForgeBundle\Tests\Generator;
 use Tdn\ForgeBundle\Generator\AbstractServiceGenerator;
 use Tdn\ForgeBundle\Generator\ServiceGeneratorInterface;
 use \Mockery;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Tests\Traits\ServiceManagerMock;
 
 /**
@@ -19,7 +19,7 @@ abstract class AbstractServiceGeneratorTest extends AbstractGeneratorTest
     public function testServiceUtils()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             []

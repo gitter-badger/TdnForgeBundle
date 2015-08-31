@@ -5,7 +5,7 @@ namespace Tdn\ForgeBundle\Generator;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\ServiceDefinition;
 
 /**
@@ -35,7 +35,7 @@ class HandlerGenerator extends AbstractServiceGenerator
         $this->addManagerDependency();
         $this->addFormTypeDependency();
 
-        if ($this->getFormat() !== Format::ANNOTATION) {
+        if ($this->getFormat() !== FormatInterface::ANNOTATION) {
             $this->addServiceFile('handlers');
         }
 

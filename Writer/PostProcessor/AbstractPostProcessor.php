@@ -41,6 +41,9 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
         $this->binDir    = $this->findBinDir();
     }
 
+    /**
+     * @return string
+     */
     protected function getBinDir()
     {
         return $this->binDir;
@@ -59,8 +62,8 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
 
         $binDir = $this->finder
             ->directories()
-            ->name("bin")
-            ->depth("< 2")
+            ->name('bin')
+            ->depth('< 2')
             ->in($searchIn)
         ;
 
@@ -69,7 +72,7 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
         if (count($binDirs) > 1) {
             throw new DirectoryNotFoundException(
                 sprintf(
-                    "Found multiple bin directories: %s%s",
+                    'Found multiple bin directories: %s%s',
                     PHP_EOL,
                     implode(PHP_EOL . '- ', $binDirs)
                 )
@@ -79,7 +82,7 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
         if (count($binDir) < 1) {
             throw new DirectoryNotFoundException(
                 sprintf(
-                    "Bin directory could not be found in %s.",
+                    'Bin directory could not be found in %s.',
                     $searchIn
                 )
             );
@@ -98,10 +101,6 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
      */
     public function supports(SplFileInfo $file)
     {
-        if (in_array(mb_strtolower($file->getExtension()), $this->getSupportedExtensions())) {
-            return true;
-        }
-
-        return false;
+        return in_array(mb_strtolower($file->getExtension()), $this->getSupportedExtensions());
     }
 }

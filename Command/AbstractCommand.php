@@ -20,29 +20,6 @@ use Tdn\ForgeBundle\Services\Doctrine\EntityHelper;
 abstract class AbstractCommand extends ContainerAwareCommand
 {
     /**
-     * @var ContainerInterface
-     */
-    private $container;
-
-    /**
-     * Overriding
-     *
-     * @return ContainerInterface
-     */
-    protected function getContainer()
-    {
-        return $this->container;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
      * @return QuestionHelper
      */
     protected function getQuestionHelper()

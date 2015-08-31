@@ -4,7 +4,7 @@ namespace Tdn\ForgeBundle\Tests\Generator;
 
 use Tdn\ForgeBundle\Generator\RoutingGenerator;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use \Mockery;
 
 /**
@@ -21,7 +21,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
     public function testDependencyMissing()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],
@@ -35,21 +35,21 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
     {
         return [
             [
-                Format::YAML,
+                FormatInterface::YAML,
                 self::getOutDir(),
                 true,
                 ['prefix' => 'api'],
                 [$this->getYamlRoutingFileMock()->getRealPath() => $this->getYamlRoutingFileMock()]
             ],
             [
-                Format::XML,
+                FormatInterface::XML,
                 self::getOutDir(),
                 true,
                 ['prefix' => 'api'],
                 [$this->getXmlRoutingFileMock()->getRealPath() => $this->getXmlRoutingFileMock()]
             ],
             [
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 true,
                 [],
@@ -68,7 +68,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
     public function testExplicitOptions()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             [
@@ -87,7 +87,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
     public function testUndefinedOption()
     {
         $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             ['non-existent' => true]
@@ -103,7 +103,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
     public function testBadOptionValues(array $badOptions)
     {
         $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             $badOptions
@@ -135,7 +135,7 @@ class RoutingGeneratorTest extends AbstractGeneratorTest
      * @return RoutingGenerator
      */
     protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],

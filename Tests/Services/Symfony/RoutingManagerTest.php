@@ -2,7 +2,7 @@
 
 namespace Tdn\ForgeBundle\Tests\Services\Symfony;
 
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\RouteDefinition;
 use Tdn\ForgeBundle\Model\File;
 use Tdn\ForgeBundle\Services\Symfony\RoutingManager;
@@ -25,9 +25,9 @@ class RoutingManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testSupportedFormat()
     {
-        $this->assertContains(Format::YAML, RoutingManager::getSupportedExtensions());
-        $this->assertContains(Format::XML, RoutingManager::getSupportedExtensions());
-        $this->assertNotContains(Format::ANNOTATION, RoutingManager::getSupportedExtensions());
+        $this->assertContains(FormatInterface::YAML, RoutingManager::getSupportedExtensions());
+        $this->assertContains(FormatInterface::XML, RoutingManager::getSupportedExtensions());
+        $this->assertNotContains(FormatInterface::ANNOTATION, RoutingManager::getSupportedExtensions());
     }
 
     /**

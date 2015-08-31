@@ -5,7 +5,7 @@ namespace Tdn\ForgeBundle\Tests\Services\Symfony;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Tdn\ForgeBundle\Model\File;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\ServiceDefinition;
 use Tdn\ForgeBundle\Services\Symfony\ServiceManager;
 
@@ -27,9 +27,9 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
 
     public function testSupportedFormats()
     {
-        $this->assertContains(Format::YAML, ServiceManager::getSupportedExtensions());
-        $this->assertContains(Format::XML, ServiceManager::getSupportedExtensions());
-        $this->assertNotContains(Format::ANNOTATION, ServiceManager::getSupportedExtensions());
+        $this->assertContains(FormatInterface::YAML, ServiceManager::getSupportedExtensions());
+        $this->assertContains(FormatInterface::XML, ServiceManager::getSupportedExtensions());
+        $this->assertNotContains(FormatInterface::ANNOTATION, ServiceManager::getSupportedExtensions());
     }
 
     /**

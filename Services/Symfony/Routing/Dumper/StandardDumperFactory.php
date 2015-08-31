@@ -3,7 +3,7 @@
 namespace Tdn\ForgeBundle\Services\Symfony\Routing\Dumper;
 
 use Doctrine\Common\Collections\Collection;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 use Tdn\ForgeBundle\Model\RouteDefinition;
 use Tdn\ForgeBundle\Services\Symfony\Routing\Dumper\Driver\DumperInterface;
 use Tuck\ConverterBundle\Exception\UnknownFormatException;
@@ -15,8 +15,8 @@ use Tuck\ConverterBundle\Exception\UnknownFormatException;
 class StandardDumperFactory implements DumperFactoryInterface
 {
     protected $dumperMap = [
-        Format::XML  => '\Tdn\ForgeBundle\Services\Symfony\Routing\Dumper\Driver\XmlDumper',
-        Format::YAML => '\Tdn\ForgeBundle\Services\Symfony\Routing\Dumper\Driver\YamlDumper'
+        FormatInterface::XML  => '\Tdn\ForgeBundle\Services\Symfony\Routing\Dumper\Driver\XmlDumper',
+        FormatInterface::YAML => '\Tdn\ForgeBundle\Services\Symfony\Routing\Dumper\Driver\YamlDumper'
     ];
 
     /**

@@ -5,7 +5,7 @@ namespace Tdn\ForgeBundle\Tests\Generator;
 use Tdn\ForgeBundle\Generator\ControllerGenerator;
 use Tdn\ForgeBundle\Model\File;
 use \Mockery;
-use Tdn\ForgeBundle\Model\Format;
+use Tdn\ForgeBundle\Model\FormatInterface;
 
 /**
  * Class ControllerGeneratorTest
@@ -21,7 +21,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
     public function testDependencyMissing()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             false,
             [],
@@ -36,7 +36,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
         return [
             [
                 //Basic Controller
-                Format::YAML, //Arbitrary non-annotation
+                FormatInterface::YAML, //Arbitrary non-annotation
                 self::getOutDir(),
                 true,
                 [
@@ -48,7 +48,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
             ],
             [
                 //Opinionated Controller
-                Format::YAML, //Arbitrary non-annotation
+                FormatInterface::YAML, //Arbitrary non-annotation
                 self::getOutDir(),
                 true,
                 [
@@ -60,7 +60,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
             ],
             [
                 //Fully Opinionated Controller
-                Format::ANNOTATION,
+                FormatInterface::ANNOTATION,
                 self::getOutDir(),
                 true,
                 [
@@ -85,7 +85,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
     public function testExplicitOptions()
     {
         $generator = $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             [
@@ -111,7 +111,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
     public function testBadOptionValues(array $badOptions)
     {
         $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             $badOptions
@@ -124,7 +124,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
     public function testUndefinedOption()
     {
         $this->getGenerator(
-            Format::YAML,
+            FormatInterface::YAML,
             self::getOutDir(),
             true,
             ['non-existent' => true]
@@ -228,7 +228,7 @@ class ControllerGeneratorTest extends AbstractGeneratorTest
      * @return ControllerGenerator
      */
     protected function getGenerator(
-        $format = Format::YAML,
+        $format = FormatInterface::YAML,
         $targetDir = null,
         $overwrite = true,
         array $options = [],

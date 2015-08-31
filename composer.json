@@ -54,19 +54,16 @@
         "liip/functional-test-bundle": "~1.2"
     },
     "suggest": {
-        "jms/serializer-bundle": "~1.0",
-        "friendsofsymfony/rest-bundle": "~1.7",
-        "jms/di-extra-bundle": "[~1.5]Enables di annotations (for format=annotations) for all generators.",
-        "nelmio/api-doc-bundle": "[~2.8]Enables Swagger documentation in controllers (--with-swagger)",
-        "sonata-project/doctrine-orm-admin-bundle": "[~2.3]Enables Sonata scaffolding",
-        "liip/functional-test-bundle": "[~1.2]Required when using controller test generation (--with-tests)",
-        "phpunit/phpunit": "[~4.7]Required when using controller test generation (--with-tests)",
-        "mockery/mockery": "[~0.9]Required when using test generation commands (--with-tests)",
-        "fzaninotto/faker": "[~1.5]Required when using test generation commands (--with-tests)",
-        "nelmio/cors-bundle": "[~1.4]Cross-origin resource sharing management."
-    },
-    "config": {
-        "bin-dir": "bin"
+        "jms/serializer-bundle": "Enables controller generation.",
+        "friendsofsymfony/rest-bundle": "Enables controller generation.",
+        "jms/di-extra-bundle": "Enables di annotations (for format=annotations) for all generators.",
+        "nelmio/api-doc-bundle": "Enables Swagger documentation in controllers (--with-swagger)",
+        "sonata-project/doctrine-orm-admin-bundle": "Enables Sonata scaffolding",
+        "liip/functional-test-bundle": "Required when using controller test generation (--with-tests)",
+        "phpunit/phpunit": "Required when using controller test generation (--with-tests)",
+        "mockery/mockery": "Required when using test generation commands (--with-tests)",
+        "fzaninotto/faker": "Required when using test generation commands (--with-tests)",
+        "nelmio/cors-bundle": "Cross-origin resource sharing management."
     },
     "autoload": {
         "psr-4": {
