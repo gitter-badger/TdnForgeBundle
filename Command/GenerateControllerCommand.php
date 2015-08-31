@@ -76,7 +76,7 @@ class GenerateControllerCommand extends AbstractGeneratorCommand
      */
     protected function getRoutePrefix($routePrefix = '')
     {
-        $prefix = (!empty($routePrefix)) ? $routePrefix: '';
+        $prefix = (!empty($routePrefix)) ? $routePrefix : '';
 
         return (string) String::create($prefix)->removeLeft('/');
     }
