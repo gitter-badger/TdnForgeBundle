@@ -31,7 +31,6 @@ abstract class AbstractPostProcessor implements PostProcessorInterface
 
     /**
      * Default only really used when running locally (e.g. tests in bundle)
-
      * @param string $kernelRootDir
      */
     public function __construct($kernelRootDir)
