@@ -251,4 +251,17 @@ class ControllerGenerator extends AbstractGenerator
 
         $this->addFileDependency(new File($handlerFile));
     }
+
+    protected function isValid()
+    {
+        if (!class_exists('\FOS\RestBundle\FOSRestBundle') && !$this->shouldForceGeneration()) {
+            $this->createCoreDependencyMissingException('Please install FOSRestBundle.');
+        }
+
+        if (!class_exists('JMS\SerializerBundle\JMSSerializerBundle') && !$this->shouldForceGeneration()) {
+            $this->createCoreDependencyMissingException('Please install JMSSerializerBundle.');
+        }
+
+        return parent::isValid();
+    }
 }

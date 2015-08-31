@@ -12,8 +12,6 @@ use Symfony\Component\OptionsResolver\Exception\NoSuchOptionException;
 use Symfony\Component\OptionsResolver\Exception\OptionDefinitionException;
 use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 use Tdn\ForgeBundle\Exception\FileQueueOverwriteException;
-use Tdn\ForgeBundle\Exception\PluginInstallException;
-use Tdn\ForgeBundle\Generator\Plugin\PluginInterface;
 use Tdn\ForgeBundle\Template\Strategy\TemplateStrategyInterface;
 use Tdn\ForgeBundle\Traits\Bundled;
 use Tdn\ForgeBundle\Traits\CoreDependency;
@@ -55,11 +53,6 @@ abstract class AbstractGenerator implements GeneratorInterface
      * @var array|OptionsResolver[]
      */
     private static $resolversByClass = [];
-
-    /**
-     * @var ArrayCollection|PluginInterface[]
-     */
-    private $plugins;
 
     /**
      * @var ArrayCollection|string[]
@@ -120,7 +113,6 @@ abstract class AbstractGenerator implements GeneratorInterface
 
         $this->files            = new ArrayCollection();
         $this->fileDependencies = new ArrayCollection();
-        $this->plugins          = new ArrayCollection();
         $this->messages         = new ArrayCollection();
     }
 
@@ -164,22 +156,6 @@ abstract class AbstractGenerator implements GeneratorInterface
     protected function configure()
     {
         $this->setConfigured(true);
-    }
-
-    /**
-     * @param PluginInterface $plugin
-     */
-    protected function addPlugin(PluginInterface $plugin)
-    {
-            $this->plugins->add($plugin);
-    }
-
-    /**
-     * @return ArrayCollection|PluginInterface[]
-     */
-    protected function getPlugins()
-    {
-        return $this->plugins;
     }
 
     /**
@@ -312,14 +288,6 @@ abstract class AbstractGenerator implements GeneratorInterface
             throw $this->createOptionalDependencyMissingException('Please install JMSDiExtraBundle.');
         }
 
-        foreach ($this->getPlugins() as $plugin) {
-            foreach ($plugin->getFileDependencies() as $dependency) {
-                if ($this->isDependencyValid($dependency)) {
-                    continue;
-                }
-            }
-        }
-
         foreach ($this->getFileDependencies() as $fileDependency) {
             if ($this->isDependencyValid($fileDependency)) {
                 continue;
@@ -341,12 +309,7 @@ abstract class AbstractGenerator implements GeneratorInterface
             $this->configure();
         }
 
-        if ($this->isValid()) {
-            foreach ($this->getPlugins() as $plugin) {
-                $this->addFilesFromPlugin($plugin);
-            }
-        }
-
+        $this->isValid();
         return $this->getFiles();
     }
 
@@ -432,35 +395,5 @@ abstract class AbstractGenerator implements GeneratorInterface
         }
 
         return true;
-    }
-
-    /**
-     * @param PluginInterface $plugin
-     *
-     * @throws PluginInstallException If there is an error
-     *
-     * @return void
-     */
-    private function addFilesFromPlugin(PluginInterface $plugin)
-    {
-        try {
-            if ($plugin->isInstallable()) {
-                foreach ($plugin->getFiles() as $file) {
-                    $this->addFile($file);
-                }
-            }
-        } catch (PluginInstallException $e) {
-            if ($this->shouldForceGeneration()) {
-                //Generate the files anyways.
-                foreach ($plugin->getFiles() as $file) {
-                    $this->addFile($file);
-                }
-
-                $this->addMessage($e->getMessage());
-                return;
-            }
-
-            throw $e;
-        }
     }
 }
