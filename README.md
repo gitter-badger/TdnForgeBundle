@@ -148,7 +148,7 @@ Please check out this [scrutinizer documentation page] explaining how commiting 
 [travis page]: https://travis-ci.org/vpassapera/TdnForgeBundle
 [coveralls badge]: https://img.shields.io/coveralls/vpassapera/TdnForgeBundle/develop.svg?style=flat-square
 [coveralls page]: https://coveralls.io/github/vpassapera/TdnForgeBundle?branch=develop
-[codacy shield]: https://img.shields.io/codacy/9a9be3063c8d44ca8709497469e3d097.svg?style=flat-square
+[codacy shield]: https://img.shields.io/codacy/66793ec4170a44e881a57719289ba787.svg?style=flat-square
 [codacy page]: https://www.codacy.com/public/vpassapera/TdnForgeBundle
 [sensio shield]: https://insight.sensiolabs.com/projects/06cbb1f1-948c-442d-97da-06836bb6068d/mini.png
 [sensio page]: https://insight.sensiolabs.com/projects/06cbb1f1-948c-442d-97da-06836bb6068d
