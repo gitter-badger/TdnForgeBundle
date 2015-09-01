@@ -223,6 +223,7 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $files = $this->getFiles();
+
         if ($this->shouldContinue($input, $output, $files)) {
             $output->writeln('<info>Generating files...this could take a while.</info>');
             foreach ($files as $file) {
@@ -233,13 +234,13 @@ abstract class AbstractGeneratorCommand extends AbstractCommand
                     $file->getRealPath()
                 ));
             }
-        } else {
-            $output->writeln('<notice>Generation cancelled.</notice>');
 
-            return 1;
+            return 0;
         }
 
-        return 0;
+        $output->writeln('<notice>Generation cancelled.</notice>');
+
+        return 1;
     }
 
     /**

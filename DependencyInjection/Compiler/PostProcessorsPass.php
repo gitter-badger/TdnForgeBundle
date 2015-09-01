@@ -23,7 +23,7 @@ class PostProcessorsPass implements CompilerPassInterface
         $postProcessors = $container->findTaggedServiceIds('tdn_forge.writer.postprocessor');
         $definition = $container->getDefinition('tdn_forge.writer.postprocessor.postprocessor_chain');
 
-        foreach ($postProcessors as $id => $tags) {
+        foreach (array_keys($postProcessors) as $id) {
             $definition->addMethodCall('addPostProcessor', [new Reference($id)]);
         }
     }
