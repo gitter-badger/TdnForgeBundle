@@ -3,6 +3,7 @@
 namespace Tdn\ForgeBundle\Generator;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Tdn\ForgeBundle\Generator\Plugin\Controller\TestPlugin;
 use Tdn\PhpTypes\Type\String;
 use Tdn\ForgeBundle\Model\File;
 
@@ -40,6 +41,18 @@ class ControllerGenerator extends AbstractGenerator
     {
         $this->addHandlerDependency();
         $this->addController();
+        if ($this->supportsTests()) {
+            $this->addPlugin(
+                new TestPlugin(
+                    $this->getTemplateStrategy(),
+                    $this->getBundle(),
+                    $this->getMetadata(),
+                    $this->getTargetDirectory(),
+                    $this->getFixturesPath(),
+                    $this->shouldOverWrite()
+                )
+            );
+        }
 
         parent::configure();
     }
