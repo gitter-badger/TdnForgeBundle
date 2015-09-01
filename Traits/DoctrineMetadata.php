@@ -3,6 +3,7 @@
 namespace Tdn\ForgeBundle\Traits;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Tdn\PhpTypes\Type\String;
 
 /**
@@ -138,6 +139,13 @@ trait DoctrineMetadata
         $fields = $metadata->associationMappings;
 
         foreach ($fields as $fieldName => $relation) {
+            if ($relation['type'] === ClassMetadataInfo::ONE_TO_MANY) {
+                //We shouldn't be posting/putting/patching collections.
+                unset($fields[$fieldName]);
+
+                continue;
+            }
+
             $fields[$fieldName]['relatedEntityShortcut'] =
                 $this->getEntityBundleShortcut($relation['targetEntity']);
         }
