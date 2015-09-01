@@ -4,6 +4,7 @@ namespace Tdn\ForgeBundle\Generator;
 
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Tdn\PhpTypes\Type\String;
 use Tdn\ForgeBundle\Model\File;
 use Tdn\ForgeBundle\Model\FormatInterface;
@@ -15,6 +16,27 @@ use Tdn\ForgeBundle\Model\ServiceDefinition;
  */
 class ManagerGenerator extends AbstractServiceGenerator
 {
+    /**
+     * @var bool
+     */
+    protected $customRepository;
+
+    /**
+     * @param $customRepository
+     */
+    protected function setCustomRepository($customRepository)
+    {
+        $this->customRepository = $customRepository;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCustomRepository()
+    {
+        return $this->customRepository;
+    }
+
     /**
      * Adds Abstract EntityManager (if not exists or if needs update)
      * Adds Concrete EntityManager
@@ -33,6 +55,10 @@ class ManagerGenerator extends AbstractServiceGenerator
             ($this->getTargetDirectory()) ?: $this->getBundle()->getPath()
         );
 
+        if ($this->hasCustomRepository()) {
+            $this->addCustomRepositoryFile();
+        }
+
         $this->addAbstractManagerFile($path);
         $this->addManagerFile($path, $entityConstructor);
         $this->addManagerInterfaceFile($path, $entityConstructor);
@@ -42,6 +68,35 @@ class ManagerGenerator extends AbstractServiceGenerator
         }
 
         parent::configure();
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    protected function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver
+            ->setDefined('custom-repository')
+            ->setAllowedTypes('custom-repository', 'bool')
+        ;
+
+        $resolver->setDefaults([
+            'custom-repository' => false
+        ]);
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     * @param array $options
+     *
+     * @return array
+     */
+    protected function resolveOptions(OptionsResolver $resolver, array $options)
+    {
+        $options = $resolver->resolve($options);
+        $this->setCustomRepository($options['custom-repository']);
+
+        return $options;
     }
 
     /**
@@ -183,6 +238,7 @@ class ManagerGenerator extends AbstractServiceGenerator
                 'format'    => $this->getFormat(),
                 'entity'    => $this->getEntity(),
                 'namespace' => $this->getBundle()->getNamespace(),
+                'custom_repository' => $this->hasCustomRepository()
             ]
         );
     }
@@ -202,7 +258,8 @@ class ManagerGenerator extends AbstractServiceGenerator
                 'format'                  => $this->getFormat(),
                 'entity_construct_params' => $this->getParams($constructorMethod),
                 'construct_params'        => $this->getConstructParams($constructorMethod),
-                'service_id'              => $this->getServiceId()
+                'service_id'              => $this->getServiceId(),
+                'custom_repository'       => $this->hasCustomRepository()
             ]
         );
     }
@@ -243,14 +300,6 @@ class ManagerGenerator extends AbstractServiceGenerator
         $definition = new Definition('%' . $paramKey . '%');
         $definition
             ->addArgument(new Reference('doctrine'))
-            ->addArgument(
-                sprintf(
-                    '%s\\Entity\\%s%s',
-                    $this->getBundle()->getNamespace(),
-                    $this->getEntityNamespace(),
-                    $this->getEntity()
-                )
-            )
         ;
 
         return $this->getServiceManager()
