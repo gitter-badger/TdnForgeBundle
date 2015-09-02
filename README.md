@@ -13,6 +13,8 @@
 
 TdnForgeBundle
 ==============
+
+[![Join the chat at https://gitter.im/vpassapera/TdnForgeBundle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vpassapera/TdnForgeBundle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A [Symfony 2][symfony 2] project/component generator.
 
 Inspired by [JBoss Forge](http://forge.jboss.org/).
